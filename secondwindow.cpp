@@ -1,6 +1,8 @@
 #include "secondwindow.h"
 #include "ui_secondwindow.h"
 #include "touchdrawingwidget.h"
+#include "protocol.h"
+#include "client.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(QWidget *parent) :
@@ -46,8 +48,10 @@ void SecondWindow::onLineEditReturnPressed()
     QString text = ui->lineEdit->text();
     if (text.isEmpty()) {
             qDebug() << "Nothing.";
+            send_answer("Nothing");
         } else {
             qDebug() << "Answer:" << text;
+            send_answer(text.toStdString());
             // 추가 동작 필요 시 여기에 작성
         }
 }

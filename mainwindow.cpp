@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "secondwindow.h"
+#include "client.h"
 #include <QPixmap>
 #include <QPalette>
 #include <QDebug>
@@ -41,6 +42,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     // 두 번째 창 생성 및 표시
+    run_client();
     if (!secondWindow) {
         secondWindow = new SecondWindow();
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {

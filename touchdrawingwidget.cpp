@@ -1,4 +1,5 @@
 #include "touchdrawingwidget.h"
+#include "client.h"
 #include <QTouchEvent>
 #include <QPainter>
 #include <QDebug>
@@ -51,6 +52,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                         path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
                                         lastPoint = currentPoint;
                                         update();
+                                        send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth);
                                     }
                                     break;
                     case QEvent::TouchEnd:
