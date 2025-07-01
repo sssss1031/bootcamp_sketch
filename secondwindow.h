@@ -2,6 +2,7 @@
 #define SECONDWINDOW_H
 
 #include <QMainWindow>
+#include "touchdrawingwidget.h"
 
 namespace Ui {
 class SecondWindow;
@@ -20,6 +21,10 @@ signals:
 
 private:
     Ui::SecondWindow *ui;
+    TouchDrawingWidget *drawingWidget = nullptr;
+
+protected:
+    void resizeEvent(QResizeEvent *event) override;
 
 private slots:
     void onLineEditReturnPressed();

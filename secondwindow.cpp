@@ -1,12 +1,21 @@
 #include "secondwindow.h"
 #include "ui_secondwindow.h"
+#include "touchdrawingwidget.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SecondWindow)
+    ui(new Ui::SecondWindow),
+    drawingWidget(nullptr)
 {
     ui->setupUi(this);
+
+    // QFrame에 TouchDrawingWidget 생성 및 배치
+        drawingWidget = new TouchDrawingWidget(ui->frame);
+        drawingWidget->setGeometry(ui->frame->rect());
+        drawingWidget->show();
+
+
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMain);
 
@@ -21,6 +30,15 @@ SecondWindow::SecondWindow(QWidget *parent) :
 SecondWindow::~SecondWindow()
 {
     delete ui;
+}
+
+// 리사이즈 이벤트에서 drawingWidget 크기 자동조정
+void SecondWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    if (ui->frame && drawingWidget) {
+        drawingWidget->setGeometry(ui->frame->rect());
+    }
 }
 
 void SecondWindow::onLineEditReturnPressed()

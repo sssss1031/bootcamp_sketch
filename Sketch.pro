@@ -14,12 +14,15 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    secondwindow.cpp
+        secondwindow.cpp\
+        touchdrawingwidget.cpp
 
 HEADERS  += mainwindow.h \
-    secondwindow.h
+        secondwindow.h\
+        touchdrawingwidget.h \
+    touchdrawingwidget.h
 
 FORMS    += mainwindow.ui \
-    secondwindow.ui
+        secondwindow.ui
 
 RESOURCES += resources.qrc
