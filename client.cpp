@@ -40,6 +40,12 @@ bool recv_drawpacket(int fd, DrawPacket& pkt) {
     return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
 }
 
+void send_drawpacket(int fd, const DrawPacket& pkt) {
+    send(fd, &pkt, sizeof(pkt), 0);
+}
+bool recv_drawpacket(int fd, DrawPacket& pkt) {
+    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+}
 void send_answerpacket(int fd, const AnswerPacket& pkt) {
     send(fd, &pkt.type, sizeof(pkt.type), 0);
     send_string(fd, pkt.nickname);
@@ -88,7 +94,7 @@ void recv_thread(int sockfd) {
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';      
+            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n'; 
         } else if (msg_type == MSG_CORRECT) {
             CorrectPacket pkt;
             if (!recv_correctpacket(sockfd, pkt)) break;
