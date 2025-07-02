@@ -6,6 +6,7 @@
 
 void run_client();
 extern void disconnect_client();
+int retMyNum();
 void send_answer(const std::string& ans);
 void send_coordinate(double x, double y, int penColor, int penWidth);
 

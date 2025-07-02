@@ -10,7 +10,8 @@
 #include <chrono>
 #include <QDebug>
 
-int sockfd = -1;
+int sockfd;
+int my_Num = 0;
 
 void send_string(int fd, const std::string& s) {
     uint32_t len = s.size();
@@ -28,6 +29,18 @@ std::string recv_string(int fd) {
     return s;
 }
 
+bool recv_playerpacket(int fd, PlayerNumPacket& pkt) {
+    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+}
+
+void send_drawpacket(int fd, const DrawPacket& pkt) {
+    send(fd, &pkt, sizeof(pkt), 0);
+}
+
+bool recv_drawpacket(int fd, DrawPacket& pkt) {
+    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+}
+
 void send_drawpacket(int fd, const DrawPacket& pkt) {
     send(fd, &pkt, sizeof(pkt), 0);
 }
@@ -39,10 +52,12 @@ void send_answerpacket(int fd, const AnswerPacket& pkt) {
     send_string(fd, pkt.nickname);
     send_string(fd, pkt.answer);
 }
+
 void send_correctpacket(int fd, const CorrectPacket& pkt) {
     send(fd, &pkt.type, sizeof(pkt.type), 0);
     send_string(fd, pkt.nickname);
 }
+
 bool recv_correctpacket(int fd, CorrectPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
@@ -50,10 +65,12 @@ bool recv_correctpacket(int fd, CorrectPacket& pkt) {
     pkt.nickname = recv_string(fd);
     return true;
 }
+
 void send_wrongpacket(int fd, const WrongPacket& pkt) {
     send(fd, &pkt.type, sizeof(pkt.type), 0);
     send_string(fd, pkt.message);
 }
+
 bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
@@ -63,6 +80,12 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
 }
 
 //std::atomic<bool> stop_draw{false};
+int retMyNum() {
+    //return 0 means connection error
+    return my_Num;
+}
+
+std::atomic<bool> stop_draw{false};
 
 void recv_thread(int sockfd) {
     while (true) {
@@ -74,6 +97,7 @@ void recv_thread(int sockfd) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
             std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
+            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n'; 
         } else if (msg_type == MSG_CORRECT) {
             CorrectPacket pkt;
             if (!recv_correctpacket(sockfd, pkt)) break;
@@ -85,8 +109,12 @@ void recv_thread(int sockfd) {
             if (!recv_wrongpacket(sockfd, pkt)) break;
             std::cout << "[오답] " << pkt.message << std::endl;
             gpio_led_wrong();
+        } else if (msg_type == MSG_PLAYER_NUM) {
+            PlayerNumPacket pkt;
+            if (!recv_playerpacket(sockfd, pkt)) break;
+            std::cout << "You are player" << pkt.player_num << std::endl;
+            my_Num = pkt.player_num;
         } else {
-            std::cout << "esle" <<std::endl;
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }

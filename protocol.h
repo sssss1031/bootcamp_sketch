@@ -14,6 +14,7 @@ enum MessageType {
     MSG_ANSWER = 4,
     MSG_CORRECT = 5,
     MSG_WRONG = 6,
+    MSG_PLAYER_NUM = 7,
     MSG_DISCONNECT = 8
 };
 
@@ -39,6 +40,11 @@ struct CorrectPacket {
 struct WrongPacket {
     int type;
     std::string message;
+};
+
+struct PlayerNumPacket {
+    int type;
+    int player_num;
 };
 
 #endif
