@@ -42,7 +42,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     // 두 번째 창 생성 및 표시
-    run_client();
+
     if (!secondWindow) {
         secondWindow = new SecondWindow();
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
@@ -52,5 +52,6 @@ void MainWindow::on_pushButton_clicked()
     }
 
     secondWindow->show();
+
     this->hide(); // 현재 메인 창 숨기기 (필요시)
 }

@@ -1,14 +1,14 @@
 #include "secondwindow.h"
 #include "ui_secondwindow.h"
 #include "touchdrawingwidget.h"
+#include "drawingdispatcher.h"
 #include "protocol.h"
 #include "client.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SecondWindow),
-    drawingWidget(nullptr)
+    ui(new Ui::SecondWindow)
 {
     ui->setupUi(this);
 
@@ -16,6 +16,7 @@ SecondWindow::SecondWindow(QWidget *parent) :
         drawingWidget = new TouchDrawingWidget(ui->frame);
         drawingWidget->setGeometry(ui->frame->rect());
         drawingWidget->show();
+
 
 
     // backbutton 클릭 시 backToMain 신호 발생
@@ -26,6 +27,13 @@ SecondWindow::SecondWindow(QWidget *parent) :
 
     // enterButton 엔터키를 누르면
     connect(ui->enterButton, &QPushButton::clicked, this, &SecondWindow::onLineEditReturnPressed);
+
+    connect(&DrawingDispatcher::instance(), &DrawingDispatcher::drawArrived, this,
+        [this](int drawStatus, double x, double y, int color, int thick){
+            if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
+        }
+    );
+    run_client();
 
 }
 

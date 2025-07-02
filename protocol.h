@@ -24,6 +24,7 @@ struct DrawPacket {
     int y;
     int color;
     int thick;
+    int drawStatus;
 };
 
 struct AnswerPacket {

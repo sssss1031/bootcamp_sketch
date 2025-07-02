@@ -12,8 +12,14 @@ class TouchDrawingWidget : public QWidget
 
 public:
     explicit TouchDrawingWidget(QWidget *parent = nullptr);
+    //void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
     void setEraseMode(bool enabled);
     void erase();
+    enum PacketType {
+        DRAW_BEGIN,   // 그리기 시작
+        DRAW_POINT,   // 그리기 좌표
+        DRAW_END      // 그리기 끝
+    };
 
 protected:
     bool event(QEvent *event) override;
@@ -28,6 +34,8 @@ private:
     QPointF lastPoint;
     bool drawing=false;
     bool eraseMode=false;
+    QPointF lastDrawPoint4client;
+    bool hasLastDrawPoint = false;
     int penColor = 1;
     int penWidth = 6;
     enum Color{
@@ -45,6 +53,7 @@ private:
 
 public slots:
     void giveFocus();
+    void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
 };
 
 #endif // TOUCHDRAWINGWIDGET_H

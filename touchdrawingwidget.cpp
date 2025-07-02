@@ -44,6 +44,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                         lastPoint = pt.pos();
                         path = QPainterPath();
                         path.moveTo(lastPoint);
+                        send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 0);
                         break;
 
                     case QEvent::TouchUpdate:
@@ -52,7 +53,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                         path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
                                         lastPoint = currentPoint;
                                         update();
-                                        send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth);
+                                        send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
                                     }
                                     break;
                     case QEvent::TouchEnd:
@@ -81,6 +82,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                         drawing = false;
                                         path = QPainterPath();
                                         update();
+                                        send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 2);
                                     }
                                     break;
                     default:
@@ -90,7 +92,58 @@ bool TouchDrawingWidget::event(QEvent *event)
             return true;
         }
 
-        return QWidget::event(event);
+        return QWidget::event(event);;
+}
+
+void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int color, int thick)
+{
+    switch(drawStatus) {
+    case DRAW_BEGIN:
+        drawing = true;
+        lastPoint = QPointF(x, y);
+        path = QPainterPath();
+        path.moveTo(lastPoint);
+
+        this->penColor = color;
+        this->penWidth = thick;
+        break;
+    case DRAW_POINT:
+        if (drawing) {
+            QPointF currentPoint(x, y);
+            path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);
+            lastPoint = currentPoint;
+            update();
+           }
+         break;
+    case DRAW_END:
+            if (drawing) {
+                QPainter painter(&canvas);
+                painter.setRenderHint(QPainter::Antialiasing);
+
+                QColor qcolor;
+                switch(penColor) {
+                    case BLACK: qcolor = Qt::black; break;
+                    case YELLOW: qcolor = Qt::yellow; break;
+                    case RED: qcolor = Qt::red; break;
+                    case BLUE: qcolor = Qt::blue; break;
+                    case WHITE: qcolor = Qt::white; break;
+                }
+                int width = 3;
+                switch(penWidth) {
+                      case SHALLOW: width = 3; break;
+                      case MIDDLE: width = 6; break;
+                      case THICK: width = 9; break;
+                 }
+
+                 painter.setPen(QPen(qcolor, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+                 painter.drawPath(path);
+
+                 drawing = false;
+                 path = QPainterPath();
+                 update();
+            }
+            break;
+      }
 }
 
 void TouchDrawingWidget::paintEvent(QPaintEvent *event)
@@ -121,6 +174,7 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
         painter.drawPath(path);
     }
 }
+
 
 void TouchDrawingWidget::setEraseMode(bool enabled)
 {

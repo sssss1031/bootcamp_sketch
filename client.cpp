@@ -1,5 +1,6 @@
 #include "client.h"
 #include "gpio_control.h"
+#include "secondwindow.h"
 #include <iostream>
 #include <thread>
 #include <cstring>
@@ -10,8 +11,11 @@
 #include <chrono>
 #include <QDebug>
 
+#include "touchdrawingwidget.h"
+
 int sockfd;
 int my_Num = 0;
+
 
 void send_string(int fd, const std::string& s) {
     uint32_t len = s.size();
@@ -41,12 +45,6 @@ bool recv_drawpacket(int fd, DrawPacket& pkt) {
     return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
 }
 
-void send_drawpacket(int fd, const DrawPacket& pkt) {
-    send(fd, &pkt, sizeof(pkt), 0);
-}
-bool recv_drawpacket(int fd, DrawPacket& pkt) {
-    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
-}
 void send_answerpacket(int fd, const AnswerPacket& pkt) {
     send(fd, &pkt.type, sizeof(pkt.type), 0);
     send_string(fd, pkt.nickname);
@@ -88,6 +86,7 @@ int retMyNum() {
 std::atomic<bool> stop_draw{false};
 
 void recv_thread(int sockfd) {
+
     while (true) {
         int msg_type = 0;
         ssize_t n = recv(sockfd, &msg_type, sizeof(int), MSG_PEEK);
@@ -96,14 +95,20 @@ void recv_thread(int sockfd) {
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n'; 
+
+                std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
+                QMetaObject::invokeMethod(
+                        &DrawingDispatcher::instance(),
+                        [pkt](){
+                            emit DrawingDispatcher::instance().drawArrived(pkt.drawStatus, pkt.x, pkt.y, pkt.color, pkt.thick);
+                        },
+                        Qt::QueuedConnection
+                    );
         } else if (msg_type == MSG_CORRECT) {
             CorrectPacket pkt;
             if (!recv_correctpacket(sockfd, pkt)) break;
             std::cout << "[정답!] " << pkt.nickname << "님이 정답을 맞혔습니다!\n";
             gpio_led_correct();
-            //stop_draw = true;
         } else if (msg_type == MSG_WRONG) {
             WrongPacket pkt;
             if (!recv_wrongpacket(sockfd, pkt)) break;
@@ -123,12 +128,12 @@ void recv_thread(int sockfd) {
     //stop_draw = true;
 }
 
-void send_coordinate(double x, double y, int penColor, int penWidth) {
+void send_coordinate(double x, double y, int penColor, int penWidth, int drawStatus) {
     DrawPacket pkt{};
     pkt.type = MSG_DRAW;
-    pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth;
+    pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
     send_drawpacket(sockfd, pkt);
-    std::cout << "[좌표전송] (" << pkt.x << ", " << pkt.y << ")\n";
+    std::cout << "[좌표전송] (" << pkt.x << ", " << pkt.y << ", "<<pkt.color <<", "<<pkt.thick<<", "<<pkt.drawStatus<<")\n";
 }
 
 void send_answer(const std::string& ans){

@@ -26,7 +26,8 @@ HEADERS  += mainwindow.h \
     client.h \
     protocol.h \
     gpio_control.h \
-    custom_ioctl.h
+    custom_ioctl.h \
+    drawingdispatcher.h
 
 FORMS    += mainwindow.ui \
         secondwindow.ui
