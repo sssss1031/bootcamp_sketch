@@ -28,6 +28,7 @@ protected:
 
 private slots:
     void onLineEditReturnPressed();
+    void backToMainRequested();
 
 };
 

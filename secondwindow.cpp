@@ -1,6 +1,8 @@
 #include "secondwindow.h"
 #include "ui_secondwindow.h"
 #include "touchdrawingwidget.h"
+#include "protocol.h"
+#include "client.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(QWidget *parent) :
@@ -17,7 +19,7 @@ SecondWindow::SecondWindow(QWidget *parent) :
 
 
     // backbutton 클릭 시 backToMain 신호 발생
-    connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMain);
+    connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
     // lineEdit에서 엔터키를 누르면 onLineEditReturnPressed() 슬롯 호출
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &SecondWindow::onLineEditReturnPressed);
@@ -30,6 +32,11 @@ SecondWindow::SecondWindow(QWidget *parent) :
 SecondWindow::~SecondWindow()
 {
     delete ui;
+}
+
+void SecondWindow::backToMainRequested() {
+    disconnect_client();  // 연결 해제
+    emit backToMain();  // 메인 윈도우로 돌아가기
 }
 
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
@@ -46,8 +53,10 @@ void SecondWindow::onLineEditReturnPressed()
     QString text = ui->lineEdit->text();
     if (text.isEmpty()) {
             qDebug() << "Nothing.";
+            send_answer("Nothing");
         } else {
             qDebug() << "Answer:" << text;
+            send_answer(text.toStdString());
             // 추가 동작 필요 시 여기에 작성
         }
 }
