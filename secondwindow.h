@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "touchdrawingwidget.h"
 
+
 namespace Ui {
 class SecondWindow;
 }
@@ -16,12 +17,13 @@ public:
     explicit SecondWindow(QWidget *parent = 0);
     ~SecondWindow();
 
+
 signals:
     void backToMain();
 
 private:
     Ui::SecondWindow *ui;
-    TouchDrawingWidget *drawingWidget = nullptr;
+    TouchDrawingWidget *drawingWidget;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
