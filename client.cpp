@@ -38,6 +38,10 @@ bool recv_playerpacket(int fd, PlayerNumPacket& pkt) {
     return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
 }
 
+bool recv_playerCntpacket(int fd, PlayerCntPacket& pkt) {
+    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+}
+
 void send_drawpacket(int fd, const DrawPacket& pkt) {
     send(fd, &pkt, sizeof(pkt), 0);
 }
@@ -74,12 +78,10 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
     pkt.type = header;
-    //pkt.nickname = recv_string(fd);
     pkt.message = recv_string(fd);
     return true;
 }
 
-//std::atomic<bool> stop_draw{false};
 int retMyNum() {
     //return 0 means connection error
     return my_Num;
@@ -128,13 +130,24 @@ void recv_thread(int sockfd) {
             std::cout << "You are player" << pkt.player_num << std::endl;
             my_Num = pkt.player_num;
 
-        } else {
+        }
+        else if (msg_type == MSG_PLAYER_CNT) {
+            PlayerCntPacket pkt;
+            if (!recv_playerCntpacket(sockfd, pkt)) break;
+            if(pkt.currentPlayer_cnt > pkt.maxPlayer){
+                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+                disconnect_client();
+                break;
+            }
+            //TODO: handle player count
+            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+
+         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }
     }
     std::cout << "Sever Disconnected\n";
-    //stop_draw = true;
 }
 
 void send_coordinate(double x, double y, int penColor, int penWidth, int drawStatus) {
@@ -142,7 +155,7 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
     pkt.type = MSG_DRAW;
     pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
     send_drawpacket(sockfd, pkt);
-    std::cout << "[좌표전송] (" << pkt.x << ", " << pkt.y << ", "<<pkt.color <<", "<<pkt.thick<<", "<<pkt.drawStatus<<")\n";
+    std::cout << "[Send coordinate] (" << pkt.x << ", " << pkt.y << ", "<<pkt.color <<", "<<pkt.thick<<", "<<pkt.drawStatus<<")\n";
 }
 
 void send_answer(const std::string& ans){
@@ -152,7 +165,7 @@ void send_answer(const std::string& ans){
     apkt.nickname = ""; // 서버에서 부여
     apkt.answer = ans;
     send_answerpacket(sockfd, apkt);
-    std::cout << "[정답전송] : " << apkt.answer << std::endl;
+    std::cout << "[Send answer] : " << apkt.answer << std::endl;
 }
 
 void run_client() {

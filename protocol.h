@@ -15,7 +15,8 @@ enum MessageType {
     MSG_CORRECT = 5,
     MSG_WRONG = 6,
     MSG_PLAYER_NUM = 7,
-    MSG_DISCONNECT = 8
+    MSG_DISCONNECT = 8,
+    MSG_PLAYER_CNT = 9
 };
 
 struct DrawPacket {
@@ -47,6 +48,12 @@ struct WrongPacket {
 struct PlayerNumPacket {
     int type;
     int player_num;
+};
+
+struct PlayerCntPacket {
+    int type;
+    int currentPlayer_cnt;
+    int maxPlayer;
 };
 
 #endif
