@@ -29,6 +29,7 @@ protected:
 private slots:
     void onLineEditReturnPressed();
     void backToMainRequested();
+    void appendChatMessage(const QString& message);
 
 };
 

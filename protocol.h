@@ -39,6 +39,7 @@ struct CorrectPacket {
 
 struct WrongPacket {
     int type;
+    //std::string nickname;
     std::string message;
 };
 

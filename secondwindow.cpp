@@ -12,6 +12,11 @@ SecondWindow::SecondWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // 한글 폰트 지정
+    //QFont hangulFont("NanumGothic");
+    //ui->textEdit->setFont(hangulFont);
+    //ui->lineEdit->setFont(hangulFont);
+
     // QFrame에 TouchDrawingWidget 생성 및 배치
         drawingWidget = new TouchDrawingWidget(ui->frame);
         drawingWidget->setGeometry(ui->frame->rect());
@@ -59,4 +64,10 @@ void SecondWindow::onLineEditReturnPressed()
             send_answer(text.toStdString());
             // 추가 동작 필요 시 여기에 작성
         }
+}
+
+//메시지 채팅
+void SecondWindow::appendChatMessage(const QString& message) {
+    qDebug() << "appendChatMessage called:" << message;
+    ui->textEdit->append(message);
 }

@@ -45,6 +45,7 @@ void MainWindow::on_pushButton_clicked()
     run_client();
     if (!secondWindow) {
         secondWindow = new SecondWindow();
+        g_secondWindow = secondWindow;
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
             this->show();
             secondWindow->hide();

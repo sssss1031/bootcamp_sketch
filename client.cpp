@@ -9,6 +9,7 @@
 #include <atomic>
 #include <chrono>
 #include <QDebug>
+#include "secondwindow.h"
 
 int sockfd;
 int my_Num = 0;
@@ -69,6 +70,7 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
     pkt.type = header;
+    //pkt.nickname = recv_string(fd);
     pkt.message = recv_string(fd);
     return true;
 }
@@ -91,29 +93,37 @@ void recv_thread(int sockfd) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
             std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n'; 
         } else if (msg_type == MSG_CORRECT) {
             CorrectPacket pkt;
             if (!recv_correctpacket(sockfd, pkt)) break;
-            std::cout << "[정답!] " << pkt.nickname << "님이 정답을 맞혔습니다!\n";
-            gpio_led_correct();
+            std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
+            QString qmsg = QString("[Correct] %1 won this round!").arg(QString::fromStdString(pkt.nickname));
+            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            //gpio_led_correct();
             //stop_draw = true;
+
         } else if (msg_type == MSG_WRONG) {
             WrongPacket pkt;
             if (!recv_wrongpacket(sockfd, pkt)) break;
-            std::cout << "[오답] " << pkt.message << std::endl;
-            gpio_led_wrong();
+            std::cout << "[Wrong] " << pkt.message << std::endl;
+            std::cout << pkt.message << std::endl;
+            QString qmsg = QString("[Wrong answer] %1's").arg(QString::fromStdString(pkt.message));
+            qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
+            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            //gpio_led_wrong();
+
         } else if (msg_type == MSG_PLAYER_NUM) {
             PlayerNumPacket pkt;
             if (!recv_playerpacket(sockfd, pkt)) break;
             std::cout << "You are player" << pkt.player_num << std::endl;
             my_Num = pkt.player_num;
+
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }
     }
-    std::cout << "서버 연결 종료\n";
+    std::cout << "Sever Disconnected\n";
     //stop_draw = true;
 }
 
