@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include "touchdrawingwidget.h"
 
-
 namespace Ui {
 class SecondWindow;
 }
@@ -32,7 +31,7 @@ private slots:
     void onLineEditReturnPressed();
     void backToMainRequested();
     void appendChatMessage(const QString& message);
-
+    void onPenChanged(int color, int width);
 };
 
 #endif // SECONDWINDOW_H
