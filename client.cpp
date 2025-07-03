@@ -78,7 +78,10 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
     pkt.type = header;
+<<<<<<< HEAD
     pkt.nickname = recv_string(fd);
+=======
+>>>>>>> ea1e540ad2fdd49c502eaffa79719bfdd0bae7f7
     pkt.message = recv_string(fd);
     return true;
 }
@@ -136,6 +139,7 @@ void recv_thread(int sockfd) {
             PlayerCntPacket pkt;
             if (!recv_playerCntpacket(sockfd, pkt)) break;
             if(pkt.currentPlayer_cnt > pkt.maxPlayer){
+<<<<<<< HEAD
                 std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
                 if (g_secondWindow) {
                             QMetaObject::invokeMethod(g_secondWindow, "backToMainRequested", Qt::QueuedConnection);
@@ -144,6 +148,14 @@ void recv_thread(int sockfd) {
             }
             //TODO: handle player count
             std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
+=======
+                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+                disconnect_client();
+                break;
+            }
+            //TODO: handle player count
+            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+>>>>>>> ea1e540ad2fdd49c502eaffa79719bfdd0bae7f7
 
          } else {
             char buf[256];
