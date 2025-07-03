@@ -12,6 +12,7 @@ TouchDrawingWidget::TouchDrawingWidget(QWidget *parent)
     setAttribute(Qt::WA_OpaquePaintEvent);
     canvas.fill(Qt::white);
     setFocusPolicy(Qt::StrongFocus);
+
 }
 
 void TouchDrawingWidget::resizeEvent(QResizeEvent *event)
@@ -175,16 +176,6 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
     }
 }
 
-
-void TouchDrawingWidget::setEraseMode(bool enabled)
-{
-    eraseMode = enabled;
-    if(eraseMode)
-        qDebug() << "erase enabled!";
-    else
-        qDebug() << "pen enabled!";
-}
-
 void TouchDrawingWidget::erase()
 {
     canvas.fill(Qt::white);
@@ -207,10 +198,10 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_E: penWidth = THICK; break;
 
         case Qt::Key_Space: eraseMode = true; break;
-
-        default: penColor = 1; break;
     }
-
+        
+    emit penChanged(penColor, penWidth);
+    
     switch(penColor)
         {
         case BLACK: qDebug() << "black"; break;
@@ -233,6 +224,20 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         eraseMode = false;
     }
         // ui->label->setText(text);
+}
+
+void TouchDrawingWidget::colorClicked()
+{
+    if (penColor==5) { penColor = 1; }
+    else { penColor += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
+void TouchDrawingWidget::widthClicked()
+{
+    if (penWidth==12) { penWidth = 10; }
+    else { penWidth += 1; }
+    emit penChanged(penColor, penWidth);
 }
 
 void TouchDrawingWidget::giveFocus()

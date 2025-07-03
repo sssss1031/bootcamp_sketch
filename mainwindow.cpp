@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    QPixmap bkgnd(":/new/prefix1/background_gpt.png");
+    QPixmap bkgnd(":/new/prefix1/background3_gpt.jpeg");
     if (bkgnd.isNull()) {
         qDebug() << "Can not load Image";
     } else {
@@ -39,11 +39,43 @@ MainWindow::~MainWindow()
     if (secondWindow) delete secondWindow;
 }
 
-void MainWindow::on_pushButton_clicked()
+//void MainWindow::on_pushButton_clicked()
+//{
+//    // 두 번째 창 생성 및 표시
+//    if (!secondWindow) {
+//        secondWindow = new SecondWindow();
+//        QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
+//        connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+
+//            this->show();
+//            secondWindow->deleteLater();
+//            if (secondWindow) {
+//                secondWindow = nullptr;
+//                g_secondWindow = nullptr;
+//            }
+//        });
+//    }
+//    g_secondWindow = secondWindow;
+//    secondWindow->show();
+
+//    this->hide(); // 현재 메인 창 숨기기 (필요시)
+//}
+void MainWindow::on_pushButton_3p_clicked()
 {
-    // 두 번째 창 생성 및 표시
+    desiredMaxPlayer = 3;
+    showSecondWindow();
+}
+
+void MainWindow::on_pushButton_2p_clicked()
+{
+    desiredMaxPlayer = 2;
+    showSecondWindow();
+}
+
+void MainWindow::showSecondWindow()
+{
     if (!secondWindow) {
-        secondWindow = new SecondWindow();
+        secondWindow = new SecondWindow(desiredMaxPlayer); //서버에 max_player값 전달
         QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
 
@@ -57,6 +89,5 @@ void MainWindow::on_pushButton_clicked()
     }
     g_secondWindow = secondWindow;
     secondWindow->show();
-
-    this->hide(); // 현재 메인 창 숨기기 (필요시)
+    this->hide();
 }

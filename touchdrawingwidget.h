@@ -54,6 +54,12 @@ private:
 public slots:
     void giveFocus();
     void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
+    void colorClicked();
+    void widthClicked();
+
+signals:
+    void penChanged(int c, int w);
+
 };
 
 #endif // TOUCHDRAWINGWIDGET_H
