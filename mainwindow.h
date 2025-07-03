@@ -4,9 +4,11 @@
 #include <QMainWindow>
 #include "secondwindow.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
 
 class MainWindow : public QMainWindow
 {
@@ -17,9 +19,12 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_pushButton_clicked();
+    void on_pushButton_3p_clicked();
+    void on_pushButton_2p_clicked();
 
 private:
+    int desiredMaxPlayer = 2;
+    void showSecondWindow();
     Ui::MainWindow *ui;
     SecondWindow *secondWindow; // 두 번째 창 포인터
     void resizeEvent(QResizeEvent *event) override;

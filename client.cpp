@@ -78,9 +78,20 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
     pkt.type = header;
+    pkt.nickname = recv_string(fd);
     pkt.message = recv_string(fd);
     return true;
 }
+
+bool recv_commonpacket(int fd, CommonPacket& pkt) {
+    int header;
+    if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
+    pkt.type = header;
+    pkt.nickname = recv_string(fd);
+    pkt.message = recv_string(fd);
+    return true;
+}
+
 
 int retMyNum() {
     //return 0 means connection error
@@ -108,18 +119,18 @@ void recv_thread(int sockfd) {
                     Qt::QueuedConnection
                 );
         } else if (msg_type == MSG_CORRECT) {
-            CorrectPacket pkt;
-            if (!recv_correctpacket(sockfd, pkt)) break;
+            CommonPacket pkt;
+            if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
-            QString qmsg = QString("[Correct] %1 won this round!").arg(QString::fromStdString(pkt.nickname));
+            QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             //gpio_led_correct();
         } else if (msg_type == MSG_WRONG) {
-            WrongPacket pkt;
-            if (!recv_wrongpacket(sockfd, pkt)) break;
+            CommonPacket pkt;
+            if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;
-            QString qmsg = QString("[Wrong answer] %1's").arg(QString::fromStdString(pkt.message));
+            QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
             QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             //gpio_led_wrong();
@@ -135,12 +146,14 @@ void recv_thread(int sockfd) {
             PlayerCntPacket pkt;
             if (!recv_playerCntpacket(sockfd, pkt)) break;
             if(pkt.currentPlayer_cnt > pkt.maxPlayer){
-                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
-                disconnect_client();
+                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
+                if (g_secondWindow) {
+                            QMetaObject::invokeMethod(g_secondWindow, "backToMainRequested", Qt::QueuedConnection);
+                        }
                 break;
             }
             //TODO: handle player count
-            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
 
          } else {
             char buf[256];
@@ -168,8 +181,8 @@ void send_answer(const std::string& ans){
     std::cout << "[Send answer] : " << apkt.answer << std::endl;
 }
 
-void run_client() {
-    qDebug() << "run_client called";
+void run_client(int maxPlayer) {
+    qDebug() << "run_client called, player count =" << maxPlayer;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) { perror("socket"); exit(1); }
     sockaddr_in serv_addr{};
@@ -179,6 +192,11 @@ void run_client() {
     if (connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
         perror("connect"); exit(1);
     }
+
+    // 서버에 maxPlayer 값 전송
+        int msgType = 9999;
+        send(sockfd, &msgType, sizeof(msgType), 0);
+        send(sockfd, &maxPlayer, sizeof(maxPlayer), 0);
 
     std::thread(recv_thread, sockfd).detach();
 }

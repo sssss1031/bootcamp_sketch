@@ -6,11 +6,13 @@
 #include "client.h"
 #include <QDebug>
 
-SecondWindow::SecondWindow(QWidget *parent) :
+SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SecondWindow)
+    ui(new Ui::SecondWindow),
+    m_maxPlayer(maxPlayer)
 {
     ui->setupUi(this);
+    this->setAutoFillBackground(true);
 
     // QFrame에 TouchDrawingWidget 생성 및 배치
     drawingWidget = new TouchDrawingWidget(ui->frame);
@@ -18,6 +20,8 @@ SecondWindow::SecondWindow(QWidget *parent) :
     drawingWidget->show();
 
     // backbutton
+
+    // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
     // enter key
@@ -43,6 +47,8 @@ SecondWindow::SecondWindow(QWidget *parent) :
     ui->widthbutton->raise();
 
     run_client();
+    //run_client();
+    run_client(m_maxPlayer); // maxPlayer 인자 전달
 
 }
 
@@ -59,6 +65,16 @@ void SecondWindow::backToMainRequested() {
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
 void SecondWindow::resizeEvent(QResizeEvent *event)
 {
+    // 배경이미지 설정
+    QPixmap bkgnd(":/new/prefix1/background2_gpt.png");
+    if (bkgnd.isNull()) {
+        qDebug() << "Can not load Image";
+    } else {
+        bkgnd = bkgnd.scaled(this->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        QPalette palette;
+        palette.setBrush(QPalette::Window, bkgnd);
+        this->setPalette(palette);
+    }
     QMainWindow::resizeEvent(event);
     if (ui->frame && drawingWidget) {
         drawingWidget->setGeometry(ui->frame->rect());
