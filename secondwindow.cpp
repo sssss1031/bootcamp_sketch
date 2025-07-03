@@ -6,9 +6,10 @@
 #include "client.h"
 #include <QDebug>
 
-SecondWindow::SecondWindow(QWidget *parent) :
+SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SecondWindow)
+    ui(new Ui::SecondWindow),
+    m_maxPlayer(maxPlayer)
 {
     ui->setupUi(this);
 
@@ -37,7 +38,8 @@ SecondWindow::SecondWindow(QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
-    run_client();
+    //run_client();
+    run_client(m_maxPlayer); // maxPlayer 인자 전달
 
 }
 

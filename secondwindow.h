@@ -14,7 +14,7 @@ class SecondWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit SecondWindow(QWidget *parent = 0);
+    explicit SecondWindow(int maxPlayer = 2, QWidget *parent = nullptr);
     ~SecondWindow();
 
 
@@ -22,6 +22,7 @@ signals:
     void backToMain();
 
 private:
+    int m_maxPlayer;
     Ui::SecondWindow *ui;
     TouchDrawingWidget *drawingWidget;
 
