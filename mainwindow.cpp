@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     this->setAutoFillBackground(true);
     LoopBgm *bgm = new LoopBgm(this);
-    bgm->startLoop("/tmp/bgm.wav", "hw:3,0");
+    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
