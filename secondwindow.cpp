@@ -20,11 +20,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
 
-<<<<<<< HEAD
-=======
-    // backbutton
-
->>>>>>> 595252cc4a0d6c2a5993f32b33df2c15e550ef68
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
