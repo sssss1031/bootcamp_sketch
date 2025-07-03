@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
-    QPixmap bkgnd(":/new/prefix1/background_gpt.png");
+    QPixmap bkgnd(":/new/prefix1/background3_gpt.jpeg");
     if (bkgnd.isNull()) {
         qDebug() << "Can not load Image";
     } else {

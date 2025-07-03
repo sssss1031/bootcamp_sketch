@@ -12,6 +12,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     m_maxPlayer(maxPlayer)
 {
     ui->setupUi(this);
+    this->setAutoFillBackground(true);
 
     // 한글 폰트 지정
     //QFont hangulFont("NanumGothic");
@@ -56,6 +57,16 @@ void SecondWindow::backToMainRequested() {
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
 void SecondWindow::resizeEvent(QResizeEvent *event)
 {
+    // 배경이미지 설정
+    QPixmap bkgnd(":/new/prefix1/background2_gpt.png");
+    if (bkgnd.isNull()) {
+        qDebug() << "Can not load Image";
+    } else {
+        bkgnd = bkgnd.scaled(this->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        QPalette palette;
+        palette.setBrush(QPalette::Window, bkgnd);
+        this->setPalette(palette);
+    }
     QMainWindow::resizeEvent(event);
     if (ui->frame && drawingWidget) {
         drawingWidget->setGeometry(ui->frame->rect());
