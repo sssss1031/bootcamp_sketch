@@ -2,21 +2,24 @@
 #include "ui_mainwindow.h"
 #include "secondwindow.h"
 #include "client.h"
+#include "playbgm.h"
 #include <QPixmap>
 #include <QPalette>
 #include <QDebug>
 #include <QScreen>
 
+SecondWindow* g_secondWindow = nullptr;
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , secondWindow(nullptr) // 초기화
+    , secondWindow(nullptr)
 {
     ui->setupUi(this);
-//    QRect screenGeometry = QGuiApplication::primaryScreen()->geometry();
-//        this->resize(screenGeometry.width(), screenGeometry.height());
+
     this->setAutoFillBackground(true);
-    //connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::on_pushButton_clicked);
+    LoopBgm *bgm = new LoopBgm(this);
+    bgm->startLoop("/tmp/bgm.wav", "hw:3,0");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -42,16 +45,20 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     // 두 번째 창 생성 및 표시
-
     if (!secondWindow) {
         secondWindow = new SecondWindow();
-        g_secondWindow = secondWindow;
+        QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+
             this->show();
-            secondWindow->hide();
+            secondWindow->deleteLater();
+            if (secondWindow) {
+                secondWindow = nullptr;
+                g_secondWindow = nullptr;
+            }
         });
     }
-
+    g_secondWindow = secondWindow;
     secondWindow->show();
 
     this->hide(); // 현재 메인 창 숨기기 (필요시)

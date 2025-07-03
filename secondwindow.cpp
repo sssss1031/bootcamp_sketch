@@ -4,6 +4,7 @@
 #include "drawingdispatcher.h"
 #include "protocol.h"
 #include "client.h"
+#include "buttonmonitor.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(QWidget *parent) :
@@ -23,7 +24,6 @@ SecondWindow::SecondWindow(QWidget *parent) :
         drawingWidget->show();
 
 
-
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
@@ -38,6 +38,11 @@ SecondWindow::SecondWindow(QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
+    // button monitoring
+    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
+        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
+            drawingWidget->erase();
+        });
     run_client();
 
 }
