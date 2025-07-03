@@ -23,7 +23,6 @@ SecondWindow::SecondWindow(QWidget *parent) :
         drawingWidget->show();
 
 
-
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 

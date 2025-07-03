@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "secondwindow.h"
 #include "drawingdispatcher.h"
+#include "mainwindow.h"
 
 void run_client();
 extern void disconnect_client();
