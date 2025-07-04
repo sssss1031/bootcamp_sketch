@@ -1,5 +1,5 @@
-#include "secondwindow.h"
-#include "ui_secondwindow.h"
+#include "thirdwindow.h"
+#include "ui_thirdwindow.h"
 #include "touchdrawingwidget.h"
 #include "drawingdispatcher.h"
 #include "protocol.h"
@@ -7,9 +7,9 @@
 #include "buttonmonitor.h"
 #include <QDebug>
 
-SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
+ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::SecondWindow),
+    ui(new Ui::ThirdWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,2,0)
 {
@@ -22,13 +22,13 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->show();
 
     // backbutton 클릭 시 backToMain 신호 발생
-    connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
+    connect(ui->backbutton, &QPushButton::clicked, this, &ThirdWindow::backToMainRequested);
 
     // enter key
-    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &SecondWindow::onLineEditReturnPressed);
+    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &ThirdWindow::onLineEditReturnPressed);
 
     // enterButton
-    connect(ui->enterButton, &QPushButton::clicked, this, &SecondWindow::onLineEditReturnPressed);
+    connect(ui->enterButton, &QPushButton::clicked, this, &ThirdWindow::onLineEditReturnPressed);
 
     // send Packet
     connect(&DrawingDispatcher::instance(), &DrawingDispatcher::drawArrived, this,
@@ -41,20 +41,10 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
         connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
             drawingWidget->erase();
         });
-    
-    // pen changed
-    connect(drawingWidget, &TouchDrawingWidget::penChanged, this, &SecondWindow::onPenChanged);
-    connect(ui->colorbutton, &QPushButton::clicked, this, [this]() {drawingWidget->colorClicked();});
-    connect(ui->widthbutton, &QPushButton::clicked, this, [this]() {drawingWidget->widthClicked();});
-
-    ui->buttoncover->raise();
-    ui->colorbutton->raise();
-    ui->widthbutton->raise();
-
 
     // timer
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
+    connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
@@ -62,22 +52,21 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
-
-    qDebug() << "second";
+    qDebug() << "third";
 }
 
-SecondWindow::~SecondWindow()
+ThirdWindow::~ThirdWindow()
 {
     delete ui;
 }
 
-void SecondWindow::backToMainRequested() {
+void ThirdWindow::backToMainRequested() {
     disconnect_client();  // 연결 해제
     emit backToMain();  // 메인 윈도우로 돌아가기
 }
 
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
-void SecondWindow::resizeEvent(QResizeEvent *event)
+void ThirdWindow::resizeEvent(QResizeEvent *event)
 {
     // 배경이미지 설정
     QPixmap bkgnd(":/new/prefix1/background2_gpt.png");
@@ -95,7 +84,7 @@ void SecondWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-void SecondWindow::onLineEditReturnPressed()
+void ThirdWindow::onLineEditReturnPressed()
 {
     QString text = ui->lineEdit->text();
     if (text.isEmpty()) {
@@ -109,18 +98,18 @@ void SecondWindow::onLineEditReturnPressed()
 }
 
 //메시지 채팅
-void SecondWindow::appendChatMessage(const QString& message) {
+void ThirdWindow::appendChatMessage(const QString& message) {
     qDebug() << "appendChatMessage called:" << message;
     ui->textEdit->append(message);
 }
 
-void SecondWindow::endRound(const QString& message){
+void ThirdWindow::endRound(const QString& message){
     qDebug() << "endRound! msg: " << message;
 
     // CORRECT : change questioner
-    //int correct_num =
+    // int correct_num = message.toInt(&ok);
 
-    //if (retMyNum() == correct_num) true;
+    // if (retMyNum() == correct_num)
 
     // TODO: time over -> maintain
 
@@ -128,7 +117,7 @@ void SecondWindow::endRound(const QString& message){
     nextRound();
 }
 
-void SecondWindow::nextRound()
+void ThirdWindow::nextRound()
 {
     // widget
     drawingWidget->erase();
@@ -136,7 +125,7 @@ void SecondWindow::nextRound()
 
     // timer
     timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
+    connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
     ElapsedTime = QTime(0,2,0);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
@@ -145,32 +134,7 @@ void SecondWindow::nextRound()
 
 }
 
-
-void SecondWindow::onPenChanged(int color, int width)
-{
-    QColor qc;
-    switch (color) {
-            case 1: qc = Qt::black; break;
-            case 2: qc = Qt::yellow; break;
-            case 3: qc = Qt::red; break;
-            case 4: qc = Qt::blue; break;
-            case 5: qc = Qt::white; break;
-    }
-
-    int qw;
-    switch (width) {
-                case 10: qw = 15; break;
-                case 11: qw = 30; break;
-                case 12: qw = 45; break;
-    }
-    qDebug() << qw;
-    QString style = QString("background-color: %1; border-radius: 20px;").arg(QColor(qc).name());
-
-    ui->colorbutton->setStyleSheet(style);
-    ui->widthbutton->setFixedWidth(qw);
-}
-
-void SecondWindow::updateTime()
+void ThirdWindow::updateTime()
 {
     if (ElapsedTime > QTime(0, 0, 0))
     {

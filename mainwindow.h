@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "secondwindow.h"
+#include "thirdwindow.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -26,6 +27,7 @@ private slots:
 
 private:
     SecondWindow* secondWindow = nullptr;
+    ThirdWindow* thirdWindow = nullptr;
     int serverMaxPlayer = 0;
     int currentPlayerCount = 0;
     int desiredMaxPlayer = 2;

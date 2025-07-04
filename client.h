@@ -4,6 +4,7 @@
 #include <string>
 #include "protocol.h"
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include "drawingdispatcher.h"
 #include "mainwindow.h"
 

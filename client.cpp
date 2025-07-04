@@ -1,6 +1,7 @@
 #include "client.h"
 #include "gpio_control.h"
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include <iostream>
 #include <thread>
 #include <cstring>
@@ -134,8 +135,10 @@ break;
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
-            if (g_secondWindow)
+            if (g_secondWindow){
                 QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+                QMetaObject::invokeMethod(g_secondWindow, "endRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            }
             handle_device_control_request(LED_CORRECT);
         } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;

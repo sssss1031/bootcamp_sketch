@@ -1,5 +1,5 @@
-#ifndef SECONDWINDOW_H
-#define SECONDWINDOW_H
+#ifndef THIRDWINDOW_H
+#define THIRDWINDOW_H
 
 #include <QMainWindow>
 #include <QTime>
@@ -7,16 +7,16 @@
 #include "touchdrawingwidget.h"
 
 namespace Ui {
-class SecondWindow;
+class ThirdWindow;
 }
 
-class SecondWindow : public QMainWindow
+class ThirdWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit SecondWindow(int maxPlayer = 2, QWidget *parent = nullptr);
-    ~SecondWindow();
+    explicit ThirdWindow(int maxPlayer = 2, QWidget *parent = nullptr);
+    ~ThirdWindow();
 
 
 signals:
@@ -24,11 +24,11 @@ signals:
 
 private:
     int m_maxPlayer;
-    Ui::SecondWindow *ui;
+    Ui::ThirdWindow *ui;
     TouchDrawingWidget *drawingWidget;
     QTime ElapsedTime;
     QTimer *timer;
-    void endRound(const QString& message);
+    void endRound(const QString &message);
     void nextRound();
 
 protected:
@@ -38,8 +38,8 @@ private slots:
     void onLineEditReturnPressed();
     void backToMainRequested();
     void appendChatMessage(const QString& message);
-    void onPenChanged(int color, int width);
     void updateTime();
 };
 
-#endif // SECONDWINDOW_H
+#endif // THIRDWINDOW_H
+

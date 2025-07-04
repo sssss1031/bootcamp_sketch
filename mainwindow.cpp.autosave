@@ -81,28 +81,6 @@ void MainWindow::onPlayerCountUpdated(int current, int max) {
 
     if (current == max && !secondWindow && desiredMaxPlayer == max) {
         isInWaitingState = false; // 게임 시작이므로 waiting 상태 해제
-        thirdWindow = new ThirdWindow(max);
-        ui->label_playerCount->setText("");
-        QObject::disconnect(thirdWindow, &ThirdWindow::backToMain, nullptr, nullptr);
-        connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
-
-            this->show();
-            isInWaitingState = false;
-            ui->label_playerCount->setText("");
-            thirdWindow->deleteLater();
-            if (thirdWindow) {
-                thirdWindow = nullptr;
-                g_secondWindow = nullptr;
-            }
-        });
-        g_thirdWindow = thirdWindow;
-        thirdWindow->show();
-        this->hide();
-    }
-
-
-    /*if (current == max && !secondWindow && desiredMaxPlayer == max) {
-        isInWaitingState = false; // 게임 시작이므로 waiting 상태 해제
         secondWindow = new SecondWindow(max);
         ui->label_playerCount->setText("");
         QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
@@ -120,7 +98,7 @@ void MainWindow::onPlayerCountUpdated(int current, int max) {
         g_secondWindow = secondWindow;
         secondWindow->show();
         this->hide();
-    }*/
+    }
 //    else if (secondWindow){
 //        thirdWindow = new ThirdWindow(max);
 //        ui->label_playerCount->setText("");
