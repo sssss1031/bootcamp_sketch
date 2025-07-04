@@ -16,6 +16,7 @@ SecondWindow* g_secondWindow = nullptr;
 ThirdWindow* g_thirdWindow = nullptr;
 bool isInWaitingState = false;
 extern std::atomic<bool> isRejected;
+extern int my_Num;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -63,7 +64,7 @@ void MainWindow::on_pushButton_3p_clicked()
 void MainWindow::on_pushButton_2p_clicked()
 {
 
-    desiredMaxPlayer = 2;
+    desiredMaxPlayer = 1;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
 }
@@ -88,6 +89,7 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
         selectedNum = rx.cap(1).toInt();
     }
     // 내 번호와 비교
+    // selectedNum = 2;
     if (selectedNum == my_Num) {
         // SecondWindow 띄우기
         if (!secondWindow) {

@@ -20,6 +20,7 @@ public:
 
 public slots:
     void showConnectionRejectedMessage();
+    void onSelectedPlayerNickname(const QString&);
 
 private slots:
     void onPlayerCountUpdated(int current, int max);
