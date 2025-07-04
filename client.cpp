@@ -11,12 +11,16 @@
 #include <chrono>
 #include <QDebug>
 #include "secondwindow.h"
-
+#include <QMessageBox>
 #include "touchdrawingwidget.h"
+#include "playercountdispatcher.h"
 
-int sockfd;
-int my_Num = 0; // player id -> rotate this
+int sockfd = -1;
+int my_Num = 0;
 
+int desiredMaxPlayer = 2; // 기본값(2p)
+
+extern MainWindow* g_mainWindow;
 
 void send_string(int fd, const std::string& s) {
     uint32_t len = s.size();
@@ -99,14 +103,22 @@ int retMyNum() {
 }
 
 std::atomic<bool> stop_draw{false};
+std::atomic<bool> isRejected{false};
 
 void recv_thread(int sockfd) {
+
+    bool serverDisconnected = false;
 
     while (true) {
         int msg_type = 0;
         ssize_t n = recv(sockfd, &msg_type, sizeof(int), MSG_PEEK);
-        if (n <= 0) break;
-
+        if (n <= 0) {
+            // 서버가 MSG_REJECTED 없이 정상적으로 끊은 경우 메시지박스 X
+            if (isRejected) {
+                //QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+break;
+}
+        }
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
@@ -122,7 +134,8 @@ void recv_thread(int sockfd) {
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            if (g_secondWindow)
+                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             handle_device_control_request(LED_CORRECT);
         } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
@@ -131,7 +144,8 @@ void recv_thread(int sockfd) {
             std::cout << pkt.message << std::endl;
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            if (g_secondWindow)
+                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             handle_device_control_request(LED_WRONG);
 
         } else if (msg_type == MSG_PLAYER_NUM) {
@@ -143,7 +157,21 @@ void recv_thread(int sockfd) {
         }
         else if (msg_type == MSG_PLAYER_CNT) {
             PlayerCntPacket pkt;
-            if (!recv_playerCntpacket(sockfd, pkt)) break;
+            if(!recv_playerCntpacket(sockfd, pkt)) break;
+
+            // 서버에서 받은 maxPlayer와 내가 원하는 값이 다르면,
+                // 메시지박스 띄우고, disconnect 후 recv_thread 종료
+            if (serverDisconnected) {
+                    break;
+                }
+
+            bool ok = QMetaObject::invokeMethod(
+                &PlayerCountDispatcher::instance(), "playerCountUpdated",
+                Qt::QueuedConnection,
+                Q_ARG(int, pkt.currentPlayer_cnt),
+                Q_ARG(int, pkt.maxPlayer)
+            );
+            qDebug() << "[invokeMethod] playerCountUpdated ok?" << ok;
             if(pkt.currentPlayer_cnt > pkt.maxPlayer){
                 std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
                 if (g_secondWindow) {
@@ -154,12 +182,21 @@ void recv_thread(int sockfd) {
             //TODO: handle player count
             std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
 
-         } else {
+         }
+        else if (msg_type == MSG_REJECTED) {
+    int dummy;
+    recv(sockfd, &dummy, sizeof(dummy), 0); // consume
+    isRejected = true;
+    QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+    disconnect_client();
+    break;
+    }	 else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }
     }
     std::cout << "Sever Disconnected\n";
+
 }
 
 void send_coordinate(double x, double y, int penColor, int penWidth, int drawStatus) {
@@ -180,6 +217,11 @@ void send_answer(const std::string& ans){
 }
 
 void run_client(int maxPlayer) {
+    if (sockfd > 0) {
+            //qDebug() << "Already connected!";
+            return;
+        }
+    desiredMaxPlayer = maxPlayer;
     qDebug() << "run_client called, player count =" << maxPlayer;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) { perror("socket"); exit(1); }
@@ -204,5 +246,7 @@ void disconnect_client() {
       int msg = MSG_DISCONNECT;
       send(sockfd, &msg, sizeof(msg), 0);
       qDebug() << "Disconnected";
+      close(sockfd);
+      sockfd = -1;
     }
 }

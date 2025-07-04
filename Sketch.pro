@@ -28,6 +28,7 @@ HEADERS  += mainwindow.h \
     gpio_control.h \
     custom_ioctl.h \
     drawingdispatcher.h \
+    playcountdispatcher.h
     buttonmonitor.h \
     playbgm.h
 
