@@ -16,6 +16,7 @@ SecondWindow* g_secondWindow = nullptr;
 ThirdWindow* g_thirdWindow = nullptr;
 bool isInWaitingState = false;
 extern std::atomic<bool> isRejected;
+extern int my_Num;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -72,76 +73,60 @@ void MainWindow::on_pushButton_2p_clicked()
 void MainWindow::onPlayerCountUpdated(int current, int max) {
     currentPlayerCount = current;
     serverMaxPlayer = max;
-    qDebug() << "current"<< current << "Max" << max << "desire max"<< desiredMaxPlayer;
+    qDebug() << "current" << current << "Max" << max << "desire max" << desiredMaxPlayer;
     if (isInWaitingState) {
         ui->label_playerCount->setText(QString("Waiting... (%1/%2)").arg(current).arg(max));
     } else {
         ui->label_playerCount->setText("");
     }
-
-    if (current == max && !secondWindow && desiredMaxPlayer == max) {
-        isInWaitingState = false; // 게임 시작이므로 waiting 상태 해제
-        thirdWindow = new ThirdWindow(max);
-        ui->label_playerCount->setText("");
-        QObject::disconnect(thirdWindow, &ThirdWindow::backToMain, nullptr, nullptr);
-        connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
-
-            this->show();
-            isInWaitingState = false;
-            ui->label_playerCount->setText("");
-            thirdWindow->deleteLater();
-            if (thirdWindow) {
-                thirdWindow = nullptr;
-                g_secondWindow = nullptr;
-            }
-        });
-        g_thirdWindow = thirdWindow;
-        thirdWindow->show();
-        this->hide();
-    }
-
-
-    /*if (current == max && !secondWindow && desiredMaxPlayer == max) {
-        isInWaitingState = false; // 게임 시작이므로 waiting 상태 해제
-        secondWindow = new SecondWindow(max);
-        ui->label_playerCount->setText("");
-        QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
-        connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
-
-            this->show();
-            isInWaitingState = false;
-            ui->label_playerCount->setText("");
-            secondWindow->deleteLater();
-            if (secondWindow) {
-                secondWindow = nullptr;
-                g_secondWindow = nullptr;
-            }
-        });
-        g_secondWindow = secondWindow;
-        secondWindow->show();
-        this->hide();
-    }*/
-//    else if (secondWindow){
-//        thirdWindow = new ThirdWindow(max);
-//        ui->label_playerCount->setText("");
-//        QObject::disconnect(thirdWindow, &ThirdWindow::backToMain, nullptr, nullptr);
-//        connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
-
-//            this->show();
-//            isInWaitingState = false;
-//            ui->label_playerCount->setText("");
-//            thirdWindow->deleteLater();
-//            if (thirdWindow) {
-//                thirdWindow = nullptr;
-//                g_thirdWindow = nullptr;
-//            }
-//        });
-//        g_thirdWindow = thirdWindow;
-//        thirdWindow->show();
-//        this->hide();
-//    }
 }
 
+void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
+    // "playerN"에서 N 추출
+    QRegExp rx("player(\\d+)");
+    int selectedNum = 0;
+    if (rx.indexIn(nickname) != -1) {
+        selectedNum = rx.cap(1).toInt();
+    }
+    // 내 번호와 비교
+    if (selectedNum == my_Num) {
+        // SecondWindow 띄우기
+        if (!secondWindow) {
+            secondWindow = new SecondWindow(serverMaxPlayer); // maxPlayer로 생성
+            connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+                this->show();
+                isInWaitingState = false;
+                ui->label_playerCount->setText("");
+                secondWindow->deleteLater();
+                if (secondWindow) {
+                    secondWindow = nullptr;
+                    g_secondWindow = nullptr;
+                }
+            });
+            g_secondWindow = secondWindow;
+            secondWindow->show();
+            this->hide();
+        }
+    } else {
+        // ThirdWindow 띄우기
+        if (!thirdWindow) {
+            thirdWindow = new ThirdWindow(serverMaxPlayer);
+            connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
+                this->show();
+                isInWaitingState = false;
+                ui->label_playerCount->setText("");
+                thirdWindow->deleteLater();
+                if (thirdWindow) {
+                    thirdWindow = nullptr;
+                    g_thirdWindow = nullptr;
+                }
+            });
+            g_thirdWindow = thirdWindow;
+            thirdWindow->show();
+            this->hide();
+        }
+    }
+}
 
 void MainWindow::showConnectionRejectedMessage() {
     QMessageBox::warning(this, "Fail", "Other play available");

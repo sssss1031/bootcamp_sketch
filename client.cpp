@@ -193,7 +193,19 @@ break;
     QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
     disconnect_client();
     break;
-    }	 else {
+    }else if (msg_type == MSG_SELECTED_PLAYER) {
+            int header;
+            if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
+            std::string selected_nickname = recv_string(sockfd);
+            std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
+            // Qt UI에 전달 (MainWindow 슬롯 호출)
+            QMetaObject::invokeMethod(
+                g_mainWindow,
+                "onSelectedPlayerNickname",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromStdString(selected_nickname))
+            );
+        }	 else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }
