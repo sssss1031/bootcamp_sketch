@@ -110,7 +110,6 @@ void recv_thread(int sockfd) {
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -168,7 +167,6 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
     pkt.type = MSG_DRAW;
     pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
     send_drawpacket(sockfd, pkt);
-    std::cout << "[Send coordinate] (" << pkt.x << ", " << pkt.y << ", "<<pkt.color <<", "<<pkt.thick<<", "<<pkt.drawStatus<<")\n";
 }
 
 void send_answer(const std::string& ans){
