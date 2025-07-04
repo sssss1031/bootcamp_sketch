@@ -4,11 +4,9 @@
 #include <QMainWindow>
 #include "secondwindow.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
-
 
 class MainWindow : public QMainWindow
 {
@@ -18,16 +16,25 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+public slots:
+    void showConnectionRejectedMessage();
+
 private slots:
+    void onPlayerCountUpdated(int current, int max);
     void on_pushButton_3p_clicked();
     void on_pushButton_2p_clicked();
 
 private:
+    SecondWindow* secondWindow = nullptr;
+    int serverMaxPlayer = 0;
+    int currentPlayerCount = 0;
     int desiredMaxPlayer = 2;
-    void showSecondWindow();
     Ui::MainWindow *ui;
-    SecondWindow *secondWindow; // 두 번째 창 포인터
     void resizeEvent(QResizeEvent *event) override;
 };
 
+extern MainWindow* g_mainWindow;
+
 #endif // MAINWINDOW_H
+
+

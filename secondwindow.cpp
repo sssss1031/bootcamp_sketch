@@ -46,9 +46,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
-    run_client();
     //run_client();
-    run_client(m_maxPlayer); // maxPlayer 인자 전달
+    //run_client(m_maxPlayer); // maxPlayer 인자 전달
 
 }
 
