@@ -3,5 +3,12 @@
         <file>background_gpt.png</file>
         <file>background2_gpt.png</file>
         <file>background3_gpt.jpeg</file>
+        <file>black.png</file>
+        <file>blue.png</file>
+        <file>green.png</file>
+        <file>red.png</file>
+        <file>white.png</file>
+        <file>yellow.png</file>
+        <file>eraser.png</file>
     </qresource>
 </RCC>

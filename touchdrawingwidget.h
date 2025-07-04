@@ -15,6 +15,9 @@ public:
     //void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
     void setEraseMode(bool enabled);
     void erase();
+    void widthUp();
+    void widthDown();
+    void setEraser();
     enum PacketType {
         DRAW_BEGIN,   // 그리기 시작
         DRAW_POINT,   // 그리기 좌표
@@ -37,13 +40,15 @@ private:
     QPointF lastDrawPoint4client;
     bool hasLastDrawPoint = false;
     int penColor = 1;
-    int penWidth = 6;
+    int penWidth = 11;
     enum Color{
         BLACK = 1,
         YELLOW,
         RED,
+        GREEN,
         BLUE,
         WHITE,
+        ERASER,
     };
     enum Width{
         SHALLOW=10,
