@@ -4,6 +4,7 @@
 #include "drawingdispatcher.h"
 #include "protocol.h"
 #include "client.h"
+#include "buttonmonitor.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
@@ -20,8 +21,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
 
-    // backbutton
-
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
@@ -37,6 +36,11 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
+    // button monitoring
+    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
+        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
+            drawingWidget->erase();
+        });
     
     // pen changed
     connect(drawingWidget, &TouchDrawingWidget::penChanged, this, &SecondWindow::onPenChanged);
@@ -47,6 +51,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
+<<<<<<< HEAD
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
@@ -56,6 +61,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     timer->start(1000);
 
     //run_client();
+=======
+>>>>>>> d3252c67ebfcb019472b5b7fe95d8c5042f25623
     run_client(m_maxPlayer); // maxPlayer 인자 전달
 
 }

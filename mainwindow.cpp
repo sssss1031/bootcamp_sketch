@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "secondwindow.h"
 #include "client.h"
+#include "playbgm.h"
 #include <QPixmap>
 #include <QPalette>
 #include <QDebug>
@@ -16,10 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-//    connect(ui->pushButton_3p, &QPushButton::clicked, this, &MainWindow::on_pushButton_3p_clicked);
-//    connect(ui->pushButton_2p, &QPushButton::clicked, this, &MainWindow::on_pushButton_2p_clicked);
-
     this->setAutoFillBackground(true);
+    LoopBgm *bgm = new LoopBgm(this);
+    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -81,6 +81,7 @@ void MainWindow::showSecondWindow()
         secondWindow = new SecondWindow(desiredMaxPlayer); //서버에 max_player값 전달
         QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+
             this->show();
             secondWindow->deleteLater();
             if (secondWindow) {
