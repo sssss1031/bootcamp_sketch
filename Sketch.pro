@@ -17,7 +17,8 @@ SOURCES += main.cpp\
         touchdrawingwidget.cpp \
     client.cpp \
     gpio_control.cpp \
-    buttonmonitor.cpp
+    buttonmonitor.cpp \
+    playbgm.cpp
 
 HEADERS  += mainwindow.h \
         secondwindow.h\
@@ -28,7 +29,7 @@ HEADERS  += mainwindow.h \
     gpio_control.h \
     custom_ioctl.h \
     drawingdispatcher.h \
-    playcountdispatcher.h
+    playercountdispatcher.h \
     buttonmonitor.h \
     playbgm.h
 

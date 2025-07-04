@@ -59,7 +59,7 @@ void MainWindow::on_pushButton_3p_clicked()
 void MainWindow::on_pushButton_2p_clicked()
 {
 
-    desiredMaxPlayer = 2;
+    desiredMaxPlayer = 1;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
 }
