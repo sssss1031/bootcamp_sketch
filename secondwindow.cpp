@@ -51,11 +51,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
-<<<<<<< HEAD
-    //run_client();
-    //run_client(m_maxPlayer); // maxPlayer 인자 전달
-=======
-<<<<<<< HEAD
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
@@ -63,13 +58,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
     timer->start(1000);
-
-    //run_client();
-=======
->>>>>>> d3252c67ebfcb019472b5b7fe95d8c5042f25623
-    run_client(m_maxPlayer); // maxPlayer 인자 전달
->>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
-
 }
 
 SecondWindow::~SecondWindow()
