@@ -15,7 +15,7 @@
 #include "touchdrawingwidget.h"
 
 int sockfd;
-int my_Num = 0;
+int my_Num = 0; // player id -> rotate this
 
 
 void send_string(int fd, const std::string& s) {
