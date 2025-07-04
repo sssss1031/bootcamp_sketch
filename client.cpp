@@ -15,13 +15,8 @@
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
 
-<<<<<<< HEAD
 int sockfd = -1;
 int my_Num = 0;
-=======
-int sockfd;
-int my_Num = 0; // player id -> rotate this
->>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
 
 int desiredMaxPlayer = 2; // 기본값(2p)
 
@@ -139,14 +134,9 @@ break;
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
-<<<<<<< HEAD
             if (g_secondWindow)
                 QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-            //gpio_led_correct();
-=======
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             handle_device_control_request(LED_CORRECT);
->>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
         } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
@@ -154,14 +144,9 @@ break;
             std::cout << pkt.message << std::endl;
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
-<<<<<<< HEAD
             if (g_secondWindow)
                 QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-            //gpio_led_wrong();
-=======
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             handle_device_control_request(LED_WRONG);
->>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
 
         } else if (msg_type == MSG_PLAYER_NUM) {
             PlayerNumPacket pkt;
