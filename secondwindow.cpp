@@ -4,12 +4,14 @@
 #include "drawingdispatcher.h"
 #include "protocol.h"
 #include "client.h"
+#include "buttonmonitor.h"
 #include <QDebug>
 
 SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SecondWindow),
-    m_maxPlayer(maxPlayer)
+    m_maxPlayer(maxPlayer),
+    ElapsedTime(0,0,50)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -18,8 +20,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
-
-    // backbutton
 
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
@@ -36,18 +36,39 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
+    // button monitoring
+    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
+        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
+            drawingWidget->erase();
+        });
     
     // pen changed
     connect(drawingWidget, &TouchDrawingWidget::penChanged, this, &SecondWindow::onPenChanged);
     connect(ui->colorbutton, &QPushButton::clicked, this, [this]() {drawingWidget->colorClicked();});
     connect(ui->widthbutton, &QPushButton::clicked, this, [this]() {drawingWidget->widthClicked();});
-    
+
     ui->buttoncover->raise();
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
+<<<<<<< HEAD
     //run_client();
     //run_client(m_maxPlayer); // maxPlayer 인자 전달
+=======
+<<<<<<< HEAD
+    // timer
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
+    ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+    ui->timelabel->setStyleSheet("color: black;");
+    // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
+    timer->start(1000);
+
+    //run_client();
+=======
+>>>>>>> d3252c67ebfcb019472b5b7fe95d8c5042f25623
+    run_client(m_maxPlayer); // maxPlayer 인자 전달
+>>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
 
 }
 
@@ -123,3 +144,17 @@ void SecondWindow::onPenChanged(int color, int width)
     ui->widthbutton->setFixedWidth(qw);
 }
     
+void SecondWindow::updateTime()
+{
+    if (ElapsedTime > QTime(0, 0, 0))
+    {
+        ElapsedTime = ElapsedTime.addSecs(-1);
+        ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+        if (ElapsedTime < QTime(0,0,31))
+        {
+            ui->timelabel->setStyleSheet("color: red;");
+        }
+        qDebug() << ElapsedTime.toString("mm:ss");
+    }
+    else { timer->stop(); }
+}

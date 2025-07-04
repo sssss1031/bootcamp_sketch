@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "secondwindow.h"
 #include "client.h"
+#include "playbgm.h"
 #include <QPixmap>
 #include <QPalette>
 #include <QDebug>
@@ -21,8 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     g_mainWindow = this;
     ui->setupUi(this);
+<<<<<<< HEAD
     connect(&PlayerCountDispatcher::instance(), &PlayerCountDispatcher::playerCountUpdated, this, &MainWindow::onPlayerCountUpdated);
+=======
+
+>>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
     this->setAutoFillBackground(true);
+    LoopBgm *bgm = new LoopBgm(this);
+    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -116,6 +123,7 @@ void MainWindow::onPlayerCountUpdated(int current, int max) {
         ui->label_playerCount->setText("");
         QObject::disconnect(secondWindow, &SecondWindow::backToMain, nullptr, nullptr);
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+
             this->show();
             isInWaitingState = false;
             ui->label_playerCount->setText("");

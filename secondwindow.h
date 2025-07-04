@@ -2,6 +2,8 @@
 #define SECONDWINDOW_H
 
 #include <QMainWindow>
+#include <QTime>
+#include <QTimer>
 #include "touchdrawingwidget.h"
 
 namespace Ui {
@@ -24,7 +26,8 @@ private:
     int m_maxPlayer;
     Ui::SecondWindow *ui;
     TouchDrawingWidget *drawingWidget;
-
+    QTime ElapsedTime;
+    QTimer *timer;
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
@@ -33,6 +36,7 @@ private slots:
     void backToMainRequested();
     void appendChatMessage(const QString& message);
     void onPenChanged(int color, int width);
+    void updateTime();
 };
 
 #endif // SECONDWINDOW_H

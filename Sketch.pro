@@ -16,7 +16,8 @@ SOURCES += main.cpp\
         secondwindow.cpp\
         touchdrawingwidget.cpp \
     client.cpp \
-    gpio_control.cpp
+    gpio_control.cpp \
+    buttonmonitor.cpp
 
 HEADERS  += mainwindow.h \
         secondwindow.h\
@@ -27,7 +28,12 @@ HEADERS  += mainwindow.h \
     gpio_control.h \
     custom_ioctl.h \
     drawingdispatcher.h \
+<<<<<<< HEAD
     playcountdispatcher.h
+=======
+    buttonmonitor.h \
+    playbgm.h
+>>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
 
 FORMS    += mainwindow.ui \
         secondwindow.ui
