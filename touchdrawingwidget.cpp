@@ -37,23 +37,38 @@ bool TouchDrawingWidget::event(QEvent *event)
 
                     if (!points.isEmpty()) {
                         const QTouchEvent::TouchPoint &pt = points.first();
+                    switch (event->type()) {
+                    case QEvent::TouchBegin:
+                        drawing = true;
+                        lastPoint = pt.pos();
+                        path = QPainterPath();
+                        path.moveTo(lastPoint);
+                        send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 0);
+                        break;
 
-                        switch (event->type()) {
-                        case QEvent::TouchBegin:
-                            drawing = true;
-                            lastPoint = pt.pos();
-                            path = QPainterPath();
-                            path.moveTo(lastPoint);
-                            send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 0);
-                            break;
+                    case QEvent::TouchUpdate:
+                                    if (drawing) {
+                                        QPointF currentPoint = pt.pos();
+                                        path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
+                                        lastPoint = currentPoint;
+                                        update();
+                                        send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
+                                    }
+                                    break;
+                    case QEvent::TouchEnd:
+                                    if (drawing) {
+                                        QPainter painter(&canvas);
+                                        painter.setRenderHint(QPainter::Antialiasing);
 
-                        case QEvent::TouchUpdate:
-                                        if (drawing) {
-                                            QPointF currentPoint = pt.pos();
-                                            path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
-                                            lastPoint = currentPoint;
-                                            update();
-                                            send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
+                                        QColor color;
+                                        switch(penColor) {
+                                            case BLACK: color = Qt::black; break;
+                                            case YELLOW: color = Qt::yellow; break;
+                                            case RED: color = Qt::red; break;
+                                            case GREEN: color = Qt::green; break;
+                                            case BLUE: color = Qt::blue; break;
+                                            case WHITE: color = Qt::white; break;
+                                            case ERASER: color = Qt::white; break;
                                         }
                                         break;
                         case QEvent::TouchEnd:
@@ -126,8 +141,10 @@ void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int co
                     case BLACK: qcolor = Qt::black; break;
                     case YELLOW: qcolor = Qt::yellow; break;
                     case RED: qcolor = Qt::red; break;
+                    case GREEN: color = Qt::green; break;
                     case BLUE: qcolor = Qt::blue; break;
                     case WHITE: qcolor = Qt::white; break;
+                    case ERASER: color = Qt::white; break;
                 }
                 int width = 3;
                 switch(penWidth) {
@@ -160,8 +177,10 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
             case BLACK: color = Qt::black; break;
             case YELLOW: color = Qt::yellow; break;
             case RED: color = Qt::red; break;
+            case GREEN: color = Qt::green; break;
             case BLUE: color = Qt::blue; break;
             case WHITE: color = Qt::white; break;
+            case ERASER: color = Qt::white; break;
         }
 
         int width;
@@ -198,8 +217,9 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_1: penColor = BLACK; break;
         case Qt::Key_2: penColor = YELLOW; break;
         case Qt::Key_3: penColor = RED; break;
-        case Qt::Key_4: penColor = BLUE; break;
-        case Qt::Key_5: penColor = WHITE; break;
+        case Qt::Key_4: penColor = GREEN; break;
+        case Qt::Key_5: penColor = BLUE; break;
+        case Qt::Key_6: penColor = WHITE; break;
 
         case Qt::Key_Q: penWidth = SHALLOW; break;
         case Qt::Key_W: penWidth = MIDDLE; break;
@@ -215,8 +235,10 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         case BLACK: qDebug() << "black"; break;
         case YELLOW: qDebug() << "yellow"; break;
         case RED: qDebug() << "red"; break;
+        case GREEN: qDebug() << "green"; break;
         case BLUE: qDebug() << "blue"; break;
         case WHITE: qDebug() << "white"; break;
+        case ERASER: qDebug() << "eraser"; break;
     }
 
     switch(penWidth)
@@ -236,8 +258,14 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
 
 void TouchDrawingWidget::colorClicked()
 {
-    if (penColor==5) { penColor = 1; }
+    if (penColor >= 6) { penColor = 1; }
     else { penColor += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
+void TouchDrawingWidget::setEraser()
+{
+    penColor = 7;
     emit penChanged(penColor, penWidth);
 }
 
@@ -245,6 +273,20 @@ void TouchDrawingWidget::widthClicked()
 {
     if (penWidth==12) { penWidth = 10; }
     else { penWidth += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
+void TouchDrawingWidget::widthUp()
+{
+    if (penWidth==12) return;
+    else { penWidth += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
+void TouchDrawingWidget::widthDown()
+{
+    if (penWidth==10) return;
+    else { penWidth -= 1; }
     emit penChanged(penColor, penWidth);
 }
 

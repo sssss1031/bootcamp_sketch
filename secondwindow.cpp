@@ -39,13 +39,33 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     // button monitoring
     auto *btnMon = new ButtonMonitor("/dev/mydev", this);
         connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
-            drawingWidget->erase();
+            switch(idx) {
+                           case 0: drawingWidget->setEraser(); break;
+                           case 1: drawingWidget->erase(); break;
+                           case 2: drawingWidget->colorClicked(); break;
+                           case 3: drawingWidget->widthUp(); break;
+                           case 4: drawingWidget->widthDown(); break;
+                           default : break;
+                       };
         });
     
     // pen changed
     connect(drawingWidget, &TouchDrawingWidget::penChanged, this, &SecondWindow::onPenChanged);
     connect(ui->colorbutton, &QPushButton::clicked, this, [this]() {drawingWidget->colorClicked();});
     connect(ui->widthbutton, &QPushButton::clicked, this, [this]() {drawingWidget->widthClicked();});
+
+    QIcon colorIcon(QString(":/new/prefix1/black.png"));
+    ui->colorbutton->setIcon(colorIcon);
+    ui->colorbutton->setIconSize(QSize(55,55));
+
+    int btnX = centerX - 30 / 2;
+    int btnY = centerY - 30 / 2;
+    ui->widthbutton->setGeometry(btnX, btnY, 30, 30);
+    ui->widthbutton->setIconSize(QSize(30, 30));
+    ui->widthbutton->setStyleSheet(
+        QString("border-radius: %1px; background: black; border: 2px solid #888;")
+            .arg(30/2)
+    );
 
     ui->buttoncover->raise();
     ui->colorbutton->raise();
@@ -148,15 +168,18 @@ void SecondWindow::nextRound()
 
 void SecondWindow::onPenChanged(int color, int width)
 {
-    QColor qc;
-    switch (color) {
-            case 1: qc = Qt::black; break;
-            case 2: qc = Qt::yellow; break;
-            case 3: qc = Qt::red; break;
-            case 4: qc = Qt::blue; break;
-            case 5: qc = Qt::white; break;
-    }
-
+    QString colorImg;
+        switch (color) {
+            case 1: colorImg = ":/new/prefix1/black.png"; break;
+            case 2: colorImg = ":/new/prefix1/yellow.png"; break;
+            case 3: colorImg = ":/new/prefix1/red.png"; break;
+            case 4: colorImg = ":/new/prefix1/green.png"; break;
+            case 5: colorImg = ":/new/prefix1/blue.png"; break;
+            case 6: colorImg = ":/new/prefix1/white.png"; break;
+            case 7: colorImg = ":/new/prefix1/eraser.png"; break;
+            default: colorImg = ":/new/prefix1/black.png"; break;
+        }
+    
     int qw;
     switch (width) {
                 case 10: qw = 15; break;
@@ -164,10 +187,19 @@ void SecondWindow::onPenChanged(int color, int width)
                 case 12: qw = 45; break;
     }
     qDebug() << qw;
-    QString style = QString("background-color: %1; border-radius: 20px;").arg(QColor(qc).name());
+    QIcon colorIcon(colorImg);
+    ui->colorbutton->setIcon(colorIcon);
+    ui->colorbutton->setIconSize(QSize(55,55));
 
-    ui->colorbutton->setStyleSheet(style);
-    ui->widthbutton->setFixedWidth(qw);
+    int btnX = centerX - qw / 2;
+    int btnY = centerY - qw / 2;
+    ui->widthbutton->setGeometry(btnX, btnY, qw, qw);
+
+    ui->widthbutton->setIconSize(QSize(qw, qw));
+    ui->widthbutton->setStyleSheet(
+        QString("border-radius: %1px; background: black; border: 2px solid #888;")
+            .arg(qw/2)
+    );
 }
 
 void SecondWindow::updateTime()

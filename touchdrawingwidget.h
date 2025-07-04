@@ -16,6 +16,9 @@ public:
     void setEraseMode(bool enabled);
     void erase();
     void reset();
+    void widthUp();
+    void widthDown();
+    void setEraser();
     enum PacketType {
         DRAW_BEGIN,   // 그리기 시작
         DRAW_POINT,   // 그리기 좌표
@@ -43,8 +46,10 @@ private:
         BLACK = 1,
         YELLOW,
         RED,
+        GREEN,
         BLUE,
         WHITE,
+        ERASER,
     };
     enum Width{
         SHALLOW=10,

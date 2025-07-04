@@ -31,6 +31,12 @@ private:
     void endRound(const QString& message);
     void nextRound();
 
+    const int originX = 110;
+    const int originY = 20;
+    const int originW = 61;
+    const int originH = 61;
+    const int centerX = originX + originW / 2;
+    const int centerY = originY + originH / 2;
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
