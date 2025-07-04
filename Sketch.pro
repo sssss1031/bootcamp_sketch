@@ -28,12 +28,9 @@ HEADERS  += mainwindow.h \
     gpio_control.h \
     custom_ioctl.h \
     drawingdispatcher.h \
-<<<<<<< HEAD
     playcountdispatcher.h
-=======
     buttonmonitor.h \
     playbgm.h
->>>>>>> f2de1044ab4111b03c148399b405b98c57bbace2
 
 FORMS    += mainwindow.ui \
         secondwindow.ui
