@@ -6,6 +6,8 @@
 #include <string>
 
 #define MAX_CLIENTS 10
+#define MSG_SET_MAX_PLAYER 9999
+#define MSG_REJECTED 4004
 
 enum MessageType {
     MSG_DRAW = 1,
@@ -41,7 +43,13 @@ struct CorrectPacket {
 
 struct WrongPacket {
     int type;
-    //std::string nickname;
+    std::string nickname;
+    std::string message;
+};
+
+struct CommonPacket {
+    int type;
+    std::string nickname;
     std::string message;
 };
 

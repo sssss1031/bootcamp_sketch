@@ -12,6 +12,7 @@ TouchDrawingWidget::TouchDrawingWidget(QWidget *parent)
     setAttribute(Qt::WA_OpaquePaintEvent);
     canvas.fill(Qt::white);
     setFocusPolicy(Qt::StrongFocus);
+
 }
 
 void TouchDrawingWidget::resizeEvent(QResizeEvent *event)
@@ -31,66 +32,66 @@ bool TouchDrawingWidget::event(QEvent *event)
     if (event->type() == QEvent::TouchBegin ||
             event->type() == QEvent::TouchUpdate ||
             event->type() == QEvent::TouchEnd) {
+            auto *touchEvent = static_cast<QTouchEvent *>(event);
+                    const QList<QTouchEvent::TouchPoint> points = touchEvent->touchPoints();
 
-        auto *touchEvent = static_cast<QTouchEvent *>(event);
-                const QList<QTouchEvent::TouchPoint> points = touchEvent->touchPoints();
+                    if (!points.isEmpty()) {
+                        const QTouchEvent::TouchPoint &pt = points.first();
 
-                if (!points.isEmpty()) {
-                    const QTouchEvent::TouchPoint &pt = points.first();
+                        switch (event->type()) {
+                        case QEvent::TouchBegin:
+                            drawing = true;
+                            lastPoint = pt.pos();
+                            path = QPainterPath();
+                            path.moveTo(lastPoint);
+                            send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 0);
+                            break;
 
-                    switch (event->type()) {
-                    case QEvent::TouchBegin:
-                        drawing = true;
-                        lastPoint = pt.pos();
-                        path = QPainterPath();
-                        path.moveTo(lastPoint);
-                        send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 0);
-                        break;
-
-                    case QEvent::TouchUpdate:
-                                    if (drawing) {
-                                        QPointF currentPoint = pt.pos();
-                                        path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
-                                        lastPoint = currentPoint;
-                                        update();
-                                        send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
-                                    }
-                                    break;
-                    case QEvent::TouchEnd:
-                                    if (drawing) {
-                                        QPainter painter(&canvas);
-                                        painter.setRenderHint(QPainter::Antialiasing);
-
-                                        QColor color;
-                                        switch(penColor) {
-                                            case BLACK: color = Qt::black; break;
-                                            case YELLOW: color = Qt::yellow; break;
-                                            case RED: color = Qt::red; break;
-                                            case BLUE: color = Qt::blue; break;
-                                            case WHITE: color = Qt::white; break;
+                        case QEvent::TouchUpdate:
+                                        if (drawing) {
+                                            QPointF currentPoint = pt.pos();
+                                            path.quadTo(lastPoint, (lastPoint + currentPoint) / 2);  // 곡선 보간
+                                            lastPoint = currentPoint;
+                                            update();
+                                            send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
                                         }
+                                        break;
+                        case QEvent::TouchEnd:
+                                        if (drawing) {
+                                            QPainter painter(&canvas);
+                                            painter.setRenderHint(QPainter::Antialiasing);
 
-                                        int width;
-                                        switch(penWidth) {
-                                            case SHALLOW: width = 3; break;
-                                            case MIDDLE: width = 6; break;
-                                            case THICK: width = 9; break;
+                                            QColor color;
+                                            switch(penColor) {
+                                                case BLACK: color = Qt::black; break;
+                                                case YELLOW: color = Qt::yellow; break;
+                                                case RED: color = Qt::red; break;
+                                                case BLUE: color = Qt::blue; break;
+                                                case WHITE: color = Qt::white; break;
+                                            }
+
+                                            int width;
+                                            switch(penWidth) {
+                                                case SHALLOW: width = 3; break;
+                                                case MIDDLE: width = 6; break;
+                                                case THICK: width = 9; break;
+                                            }
+
+                                            painter.setPen(QPen(color, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+                                            painter.drawPath(path);
+                                            drawing = false;
+                                            path = QPainterPath();
+                                            update();
+                                            send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 2);
                                         }
-
-                                        painter.setPen(QPen(color, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-                                        painter.drawPath(path);
-                                        drawing = false;
-                                        path = QPainterPath();
-                                        update();
-                                        send_coordinate(lastPoint.x(), lastPoint.y(), penColor, penWidth, 2);
-                                    }
-                                    break;
-                    default:
-                        break;
-                    }
-            }
+                                        break;
+                        default:
+                            break;
+                        }
+                }
             return true;
-        }
+
+    }
 
         return QWidget::event(event);;
 }
@@ -175,20 +176,18 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
     }
 }
 
-
-void TouchDrawingWidget::setEraseMode(bool enabled)
-{
-    eraseMode = enabled;
-    if(eraseMode)
-        qDebug() << "erase enabled!";
-    else
-        qDebug() << "pen enabled!";
-}
-
 void TouchDrawingWidget::erase()
 {
     canvas.fill(Qt::white);
     update();
+}
+
+void TouchDrawingWidget::reset()
+{
+    canvas.fill(Qt::white);
+    update();
+    penColor=1;
+    penWidth=11;
 }
 
 void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
@@ -207,10 +206,10 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         case Qt::Key_E: penWidth = THICK; break;
 
         case Qt::Key_Space: eraseMode = true; break;
-
-        default: penColor = 1; break;
     }
-
+        
+    emit penChanged(penColor, penWidth);
+    
     switch(penColor)
         {
         case BLACK: qDebug() << "black"; break;
@@ -235,6 +234,20 @@ void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)
         // ui->label->setText(text);
 }
 
+void TouchDrawingWidget::colorClicked()
+{
+    if (penColor==5) { penColor = 1; }
+    else { penColor += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
+void TouchDrawingWidget::widthClicked()
+{
+    if (penWidth==12) { penWidth = 10; }
+    else { penWidth += 1; }
+    emit penChanged(penColor, penWidth);
+}
+
 void TouchDrawingWidget::giveFocus()
 {
     setFocus();
@@ -243,5 +256,5 @@ void TouchDrawingWidget::giveFocus()
 void TouchDrawingWidget::focusInEvent(QFocusEvent *event)
 {
     QWidget::focusInEvent(event);
-    qDebug() << "got focus!";
+    //qDebug() << "got focus!";
 }

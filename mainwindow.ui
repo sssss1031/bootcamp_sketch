@@ -29,11 +29,11 @@
    <property name="styleSheet">
     <string notr="true"/>
    </property>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="pushButton_3p">
     <property name="geometry">
      <rect>
       <x>770</x>
-      <y>410</y>
+      <y>340</y>
       <width>191</width>
       <height>71</height>
      </rect>
@@ -48,7 +48,50 @@
      </font>
     </property>
     <property name="text">
-     <string>Start</string>
+     <string>3P Play</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2p">
+    <property name="geometry">
+     <rect>
+      <x>770</x>
+      <y>430</y>
+      <width>191</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>2P Play</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_playerCount">
+    <property name="geometry">
+     <rect>
+      <x>770</x>
+      <y>290</y>
+      <width>221</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

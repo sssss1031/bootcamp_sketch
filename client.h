@@ -4,9 +4,12 @@
 #include <string>
 #include "protocol.h"
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include "drawingdispatcher.h"
+#include "mainwindow.h"
 
-void run_client();
+//void run_client();
+void run_client(int maxPlayer);
 extern void disconnect_client();
 bool recv_drawpacket(int fd, DrawPacket& pkt);
 int retMyNum();
@@ -15,5 +18,8 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
 
 class SecondWindow;
 extern SecondWindow* g_secondWindow;
+
+class ThirdWindow;
+extern ThirdWindow* g_thirdWindow;
 
 #endif // CLIENT_H

@@ -16,19 +16,26 @@ SOURCES += main.cpp\
         secondwindow.cpp\
         touchdrawingwidget.cpp \
     client.cpp \
-    gpio_control.cpp
+    gpio_control.cpp \
+    buttonmonitor.cpp \
+    thirdwindow.cpp \
+    playbgm.cpp
 
 HEADERS  += mainwindow.h \
         secondwindow.h\
         touchdrawingwidget.h \
-    touchdrawingwidget.h \
     client.h \
     protocol.h \
     gpio_control.h \
     custom_ioctl.h \
-    drawingdispatcher.h
+    drawingdispatcher.h \
+    playcountdispatcher.h \
+    thirdwindow.h \
+    buttonmonitor.h \
+    playbgm.h
 
 FORMS    += mainwindow.ui \
-        secondwindow.ui
+        secondwindow.ui \
+    thirdwindow.ui
 
 RESOURCES += resources.qrc

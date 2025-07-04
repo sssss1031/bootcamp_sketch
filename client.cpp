@@ -1,6 +1,7 @@
 #include "client.h"
 #include "gpio_control.h"
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include <iostream>
 #include <thread>
 #include <cstring>
@@ -11,12 +12,16 @@
 #include <chrono>
 #include <QDebug>
 #include "secondwindow.h"
-
+#include <QMessageBox>
 #include "touchdrawingwidget.h"
+#include "playercountdispatcher.h"
 
-int sockfd;
+int sockfd = -1;
 int my_Num = 0;
 
+int desiredMaxPlayer = 2; // 기본값(2p)
+
+extern MainWindow* g_mainWindow;
 
 void send_string(int fd, const std::string& s) {
     uint32_t len = s.size();
@@ -78,9 +83,20 @@ bool recv_wrongpacket(int fd, WrongPacket& pkt) {
     int header;
     if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
     pkt.type = header;
+    pkt.nickname = recv_string(fd);
     pkt.message = recv_string(fd);
     return true;
 }
+
+bool recv_commonpacket(int fd, CommonPacket& pkt) {
+    int header;
+    if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
+    pkt.type = header;
+    pkt.nickname = recv_string(fd);
+    pkt.message = recv_string(fd);
+    return true;
+}
+
 
 int retMyNum() {
     //return 0 means connection error
@@ -88,18 +104,25 @@ int retMyNum() {
 }
 
 std::atomic<bool> stop_draw{false};
+std::atomic<bool> isRejected{false};
 
 void recv_thread(int sockfd) {
+
+    bool serverDisconnected = false;
 
     while (true) {
         int msg_type = 0;
         ssize_t n = recv(sockfd, &msg_type, sizeof(int), MSG_PEEK);
-        if (n <= 0) break;
-
+        if (n <= 0) {
+            // 서버가 MSG_REJECTED 없이 정상적으로 끊은 경우 메시지박스 X
+            if (isRejected) {
+                //QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+break;
+}
+        }
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            std::cout << "[DRAW] (" << pkt.x << ", " << pkt.y << ") color:" << pkt.color << " thick:" << pkt.thick << '\n';
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -108,21 +131,25 @@ void recv_thread(int sockfd) {
                     Qt::QueuedConnection
                 );
         } else if (msg_type == MSG_CORRECT) {
-            CorrectPacket pkt;
-            if (!recv_correctpacket(sockfd, pkt)) break;
+            CommonPacket pkt;
+            if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
-            QString qmsg = QString("[Correct] %1 won this round!").arg(QString::fromStdString(pkt.nickname));
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-            //gpio_led_correct();
+            QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
+            if (g_thirdWindow){
+                QMetaObject::invokeMethod(g_thirdWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+                QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            }
+            handle_device_control_request(LED_CORRECT);
         } else if (msg_type == MSG_WRONG) {
-            WrongPacket pkt;
-            if (!recv_wrongpacket(sockfd, pkt)) break;
+            CommonPacket pkt;
+            if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;
-            QString qmsg = QString("[Wrong answer] %1's").arg(QString::fromStdString(pkt.message));
+            QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
-            QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-            //gpio_led_wrong();
+            if (g_secondWindow)
+                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            handle_device_control_request(LED_WRONG);
 
         } else if (msg_type == MSG_PLAYER_NUM) {
             PlayerNumPacket pkt;
@@ -133,21 +160,46 @@ void recv_thread(int sockfd) {
         }
         else if (msg_type == MSG_PLAYER_CNT) {
             PlayerCntPacket pkt;
-            if (!recv_playerCntpacket(sockfd, pkt)) break;
+            if(!recv_playerCntpacket(sockfd, pkt)) break;
+
+            // 서버에서 받은 maxPlayer와 내가 원하는 값이 다르면,
+                // 메시지박스 띄우고, disconnect 후 recv_thread 종료
+            if (serverDisconnected) {
+                    break;
+                }
+
+            bool ok = QMetaObject::invokeMethod(
+                &PlayerCountDispatcher::instance(), "playerCountUpdated",
+                Qt::QueuedConnection,
+                Q_ARG(int, pkt.currentPlayer_cnt),
+                Q_ARG(int, pkt.maxPlayer)
+            );
+            qDebug() << "[invokeMethod] playerCountUpdated ok?" << ok;
             if(pkt.currentPlayer_cnt > pkt.maxPlayer){
-                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
-                disconnect_client();
+                std::cout << "Out of capacity - " << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
+                if (g_secondWindow) {
+                            QMetaObject::invokeMethod(g_secondWindow, "backToMainRequested", Qt::QueuedConnection);
+                        }
                 break;
             }
             //TODO: handle player count
-            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<"Max Players : " << pkt.maxPlayer << std::endl;
+            std::cout << "Cur Players : " << pkt.currentPlayer_cnt <<" Max Players : " << pkt.maxPlayer << std::endl;
 
-         } else {
+         }
+        else if (msg_type == MSG_REJECTED) {
+    int dummy;
+    recv(sockfd, &dummy, sizeof(dummy), 0); // consume
+    isRejected = true;
+    QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+    disconnect_client();
+    break;
+    }	 else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
         }
     }
     std::cout << "Sever Disconnected\n";
+
 }
 
 void send_coordinate(double x, double y, int penColor, int penWidth, int drawStatus) {
@@ -155,7 +207,6 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
     pkt.type = MSG_DRAW;
     pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
     send_drawpacket(sockfd, pkt);
-    std::cout << "[Send coordinate] (" << pkt.x << ", " << pkt.y << ", "<<pkt.color <<", "<<pkt.thick<<", "<<pkt.drawStatus<<")\n";
 }
 
 void send_answer(const std::string& ans){
@@ -168,8 +219,13 @@ void send_answer(const std::string& ans){
     std::cout << "[Send answer] : " << apkt.answer << std::endl;
 }
 
-void run_client() {
-    qDebug() << "run_client called";
+void run_client(int maxPlayer) {
+    if (sockfd > 0) {
+            //qDebug() << "Already connected!";
+            return;
+        }
+    desiredMaxPlayer = maxPlayer;
+    qDebug() << "run_client called, player count =" << maxPlayer;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) { perror("socket"); exit(1); }
     sockaddr_in serv_addr{};
@@ -180,6 +236,11 @@ void run_client() {
         perror("connect"); exit(1);
     }
 
+    // 서버에 maxPlayer 값 전송
+        int msgType = 9999;
+        send(sockfd, &msgType, sizeof(msgType), 0);
+        send(sockfd, &maxPlayer, sizeof(maxPlayer), 0);
+
     std::thread(recv_thread, sockfd).detach();
 }
 
@@ -188,5 +249,7 @@ void disconnect_client() {
       int msg = MSG_DISCONNECT;
       send(sockfd, &msg, sizeof(msg), 0);
       qDebug() << "Disconnected";
+      close(sockfd);
+      sockfd = -1;
     }
 }
