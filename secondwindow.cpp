@@ -11,7 +11,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
-    ElapsedTime(0,0,50)
+    ElapsedTime(0,2,0)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -51,7 +51,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
-<<<<<<< HEAD
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
@@ -61,8 +60,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     timer->start(1000);
 
     //run_client();
-=======
->>>>>>> d3252c67ebfcb019472b5b7fe95d8c5042f25623
     run_client(m_maxPlayer); // maxPlayer 인자 전달
 
 }
@@ -138,7 +135,16 @@ void SecondWindow::onPenChanged(int color, int width)
     ui->colorbutton->setStyleSheet(style);
     ui->widthbutton->setFixedWidth(qw);
 }
-    
+
+void SecondWindow::nextWindow()
+{
+    // re-initialize
+    drawingWidget->erase();
+
+
+}
+
+
 void SecondWindow::updateTime()
 {
     if (ElapsedTime > QTime(0, 0, 0))
