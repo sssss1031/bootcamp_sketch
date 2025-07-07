@@ -198,9 +198,6 @@ void recv_thread(int sockfd) {
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
 
-//            if (g_secondWindow)
-//                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-
             QMetaObject::invokeMethod(
                     &ChatMessageDispatcher::instance(),
                     "chatMessageArrived",
@@ -216,13 +213,23 @@ void recv_thread(int sockfd) {
             std::cout << "You are player" << pkt.player_num << std::endl;
             my_Num = pkt.player_num;
 
+            if (g_secondWindow) {
+                bool ok = QMetaObject::invokeMethod(
+                            g_secondWindow,
+                            "setMyNum",
+                            Qt::QueuedConnection,
+                            Q_ARG(int, pkt.player_num)
+                        );
+                        qDebug() << "invokeMethod setMyNum ok?" << ok;
+                    }
+
         }
         else if (msg_type == MSG_PLAYER_CNT) {
             PlayerCntPacket pkt;
             if(!recv_playerCntpacket(sockfd, pkt)) break;
 
             // 서버에서 받은 maxPlayer와 내가 원하는 값이 다르면,
-                // 메시지박스 띄우고, disconnect 후 recv_thread 종료
+            // 메시지박스 띄우고, disconnect 후 recv_thread 종료
             if (serverDisconnected) {
                     break;
                 }

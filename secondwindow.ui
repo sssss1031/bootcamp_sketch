@@ -273,24 +273,6 @@ border-radius:10px;
     <zorder>colorbutton</zorder>
     <zorder>widthbutton</zorder>
    </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>40</y>
-      <width>101</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Keyword :</string>
-    </property>
-   </widget>
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
@@ -334,15 +316,15 @@ border-style:solid;
    <widget class="QLabel" name="timelabel">
     <property name="geometry">
      <rect>
-      <x>840</x>
+      <x>790</x>
       <y>10</y>
-      <width>171</width>
+      <width>221</width>
       <height>51</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>27</pointsize>
+      <pointsize>34</pointsize>
      </font>
     </property>
     <property name="layoutDirection">
@@ -552,44 +534,20 @@ border-style:solid;
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="keyword">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>10</y>
-      <width>391</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel{
-background-color:white;
-border-color:black;
-border-width:2px;
-border-style:solid;
-}</string>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QLabel" name="roundboard">
     <property name="geometry">
      <rect>
-      <x>710</x>
-      <y>10</y>
-      <width>81</width>
-      <height>81</height>
+      <x>690</x>
+      <y>60</y>
+      <width>101</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
@@ -603,9 +561,29 @@ border-style:solid;
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>20</y>
-      <width>201</width>
-      <height>21</height>
+      <y>60</y>
+      <width>381</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>20</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_myNum">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>60</y>
+      <width>191</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -617,6 +595,9 @@ border-style:solid;
     </property>
     <property name="text">
      <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

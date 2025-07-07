@@ -25,6 +25,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
+    drawingWidget->setEnabled(true);
 
     ui->countdown->hide();
     // backbutton 클릭 시 backToMain 신호 발생
@@ -91,9 +92,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
 
-    //run_client();
-    run_client(m_maxPlayer); // maxPlayer 인자 전달
-
     qDebug() << "second";
 
 }
@@ -127,18 +125,11 @@ void SecondWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-//void SecondWindow::onLineEditReturnPressed()
-//{
-//    QString text = ui->lineEdit->text();
-//    if (text.isEmpty()) {
-//            qDebug() << "Nothing.";
-//            send_answer("Nothing");
-//        } else {
-//            qDebug() << "Answer:" << text;
-//            send_answer(text.toStdString());
-//            // 추가 동작 필요 시 여기에 작성
-//        }
-//}
+//내 player 닉네임 띄우기
+void SecondWindow::setMyNum(int num) {
+    qDebug() << "setMyNum called, num=" << num;
+    ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
+}
 
 //입력창 띄우기
 void SecondWindow::showEvent(QShowEvent* event) {
@@ -214,6 +205,8 @@ void SecondWindow::correctRound(const QString& message){
 void SecondWindow::timeoverRound(){
     qDebug() << "time over";
 
+    drawingWidget->setEnabled(false); //그림 안그려지게
+
     ui->timeover->raise();
     ui->timeover->show();
     timer->stop();
@@ -233,9 +226,12 @@ void SecondWindow::timeoverRound(){
 
 void SecondWindow::nextRound()
 {
+    drawingWidget->setEnabled(true); //그림 그려지게 활성화
     // widget
     drawingWidget->erase();
     drawingWidget->reset();
+
+    resetPenButtons();
 
     // timer
     ElapsedTime = QTime(0,0,20);
@@ -287,6 +283,26 @@ void SecondWindow::onPenChanged(int color, int width)
     // countdown timer
     m_count = 8;
     count_timer->stop();
+}
+
+
+void SecondWindow::resetPenButtons()
+{
+    // 색상 버튼(초기: 검정)
+    QIcon colorIcon(QString(":/new/prefix1/black.png"));
+    ui->colorbutton->setIcon(colorIcon);
+    ui->colorbutton->setIconSize(QSize(55,55));
+
+    // 굵기 버튼(초기: 15)
+    int qw = 15;
+    int btnX = centerX - qw / 2;
+    int btnY = centerY - qw / 2;
+    ui->widthbutton->setGeometry(btnX, btnY, qw, qw);
+    ui->widthbutton->setIconSize(QSize(qw, qw));
+    ui->widthbutton->setStyleSheet(
+        QString("border-radius: %1px; background: black; border: 2px solid #888;")
+            .arg(qw/2)
+    );
 }
 
 void SecondWindow::updateTime()
