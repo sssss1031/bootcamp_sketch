@@ -6,12 +6,14 @@
 #include "client.h"
 #include "buttonmonitor.h"
 #include <QDebug>
+#include "chatmessagedispatcher.h"
 
 ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ThirdWindow),
     m_maxPlayer(maxPlayer),
-    ElapsedTime(0,0,40)
+    ElapsedTime(0,0,20),
+    m_count(8)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -20,9 +22,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
-
-    ui->timeover->setGeometry(ui->frame->rect());
-    ui->correct->setGeometry(ui->frame->rect());
+    ui->countdown->hide();
 
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &ThirdWindow::backToMainRequested);
@@ -40,6 +40,16 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
         }
     );
 
+    connect(&ChatMessageDispatcher::instance(), &ChatMessageDispatcher::chatMessageArrived,
+            this, &ThirdWindow::appendChatMessage);
+
+
+    // button monitoring
+    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
+        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
+            drawingWidget->erase();
+        });
+
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
@@ -47,6 +57,10 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
     timer->start(1000);
+
+    // countdown timer
+    count_timer = new QTimer(this);
+    connect(count_timer, &QTimer::timeout, this, &ThirdWindow::updateCountdown);
 
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
@@ -114,9 +128,15 @@ void ThirdWindow::correctRound(const QString& message){
     ui->correct->show();
     timer->stop();
 
-    // after 5 secs, next round begins
-    QTimer::singleShot(5000, this, [=](){
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
+    // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
         ui->correct->hide();
+        ui->countdown->hide();
         nextRound();
     });
 }
@@ -128,9 +148,15 @@ void ThirdWindow::timeoverRound(){
     ui->timeover->show();
     timer->stop();
 
-    // after 5 secs, next round begins
-    QTimer::singleShot(5000, this, [=](){
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
+    // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
+        ui->countdown->hide();
         nextRound();
     });
 }
@@ -142,14 +168,15 @@ void ThirdWindow::nextRound()
     drawingWidget->reset();
 
     // timer
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
-    ElapsedTime = QTime(0,0,40);
+    ElapsedTime = QTime(0,0,20);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
     timer->start(1000);
 
+    // countdown timer
+    m_count = 8;
+    count_timer->stop();
 }
 
 void ThirdWindow::updateTime()
@@ -166,5 +193,16 @@ void ThirdWindow::updateTime()
     }
     else {
         timeoverRound();
+    }
+}
+
+void ThirdWindow::updateCountdown()
+{
+
+    if (m_count > 0)
+    {
+        m_count--;
+        ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+        qDebug() << "m_count:" << m_count;
     }
 }

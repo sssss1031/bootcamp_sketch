@@ -16,6 +16,7 @@
 #include <QMessageBox>
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
+#include "chatmessagedispatcher.h"
 
 int sockfd = -1;
 int my_Num = 0;
@@ -90,6 +91,12 @@ bool recv_drawpacket(int fd, DrawPacket& pkt) {
             return true;
 }
 
+void send_set_true_answer(const QString& word) {
+    int type = MSG_SET_TRUE_ANSWER;
+    send(sockfd, &type, sizeof(type), 0);
+    send_string(sockfd, word.toStdString());
+}
+
 void send_answerpacket(int fd, const AnswerPacket& pkt) {
     send(fd, &pkt.type, sizeof(pkt.type), 0);
     send_string(fd, pkt.nickname);
@@ -150,20 +157,45 @@ break;
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
-            if (g_thirdWindow){
-                QMetaObject::invokeMethod(g_thirdWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+//            if (g_thirdWindow){
+//                    QMetaObject::invokeMethod(g_thirdWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+//                    QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+//                }
+//                if (g_secondWindow){
+//                    QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+//                }
+
+            QMetaObject::invokeMethod(
+                &ChatMessageDispatcher::instance(),
+                "chatMessageArrived",
+                Qt::QueuedConnection,
+                Q_ARG(QString, qmsg)
+            );
+
+            if (g_thirdWindow) {
                 QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             }
-            handle_device_control_request(LED_CORRECT);
-        } else if (msg_type == MSG_WRONG) {
+
+                handle_device_control_request(LED_CORRECT);
+            }
+             else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
-            if (g_secondWindow)
-                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+
+//            if (g_secondWindow)
+//                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+
+            QMetaObject::invokeMethod(
+                    &ChatMessageDispatcher::instance(),
+                    "chatMessageArrived",
+                    Qt::QueuedConnection,
+                    Q_ARG(QString, qmsg)
+                );
+
             handle_device_control_request(LED_WRONG);
 
         } else if (msg_type == MSG_PLAYER_NUM) {
@@ -202,15 +234,11 @@ break;
 
          }
         else if (msg_type == MSG_REJECTED) {
-            //int dummy;
-            //recv(sockfd, &dummy, sizeof(dummy), 0); // consume
             isRejected = true;
             QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
             disconnect_client();
             break;
         } else if (msg_type == MSG_SELECTED_PLAYER) {
-            //int header;
-            //if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
             std::string selected_nickname = recv_string(sockfd);
             std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
 

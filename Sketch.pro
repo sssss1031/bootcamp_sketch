@@ -32,7 +32,8 @@ HEADERS  += mainwindow.h \
     playcountdispatcher.h \
     thirdwindow.h \
     buttonmonitor.h \
-    playbgm.h
+    playbgm.h \
+    chatmessagedispatcher.h
 
 FORMS    += mainwindow.ui \
         secondwindow.ui \
