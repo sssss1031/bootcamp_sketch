@@ -21,8 +21,8 @@ extern int my_Num;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , secondWindow(nullptr)
-    , thirdWindow(nullptr)
+    //, secondWindow(nullptr)
+    //, thirdWindow(nullptr)
 {
     g_mainWindow = this;
     ui->setupUi(this);
@@ -64,7 +64,7 @@ void MainWindow::on_pushButton_3p_clicked()
 void MainWindow::on_pushButton_2p_clicked()
 {
 
-    desiredMaxPlayer = 1;
+    desiredMaxPlayer = 2;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
 }
@@ -105,9 +105,9 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
                 }
             });
             g_secondWindow = secondWindow;
-            secondWindow->show();
-            this->hide();
         }
+        secondWindow->show();
+        this->hide();
     } else {
         // ThirdWindow 띄우기
         if (!thirdWindow) {
@@ -123,9 +123,9 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
                 }
             });
             g_thirdWindow = thirdWindow;
-            thirdWindow->show();
-            this->hide();
         }
+        thirdWindow->show();
+        this->hide();
     }
 }
 

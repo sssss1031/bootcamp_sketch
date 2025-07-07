@@ -12,6 +12,7 @@
 #include <chrono>
 #include <QDebug>
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include <QMessageBox>
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
@@ -40,19 +41,53 @@ std::string recv_string(int fd) {
 }
 
 bool recv_playerpacket(int fd, PlayerNumPacket& pkt) {
-    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+    ssize_t ret = recv(fd, ((char*)&pkt) + sizeof(int), sizeof(PlayerNumPacket) - sizeof(int), MSG_WAITALL);
+       if (ret == 0) {
+           std::cerr << "[recv_playerpacket] Connection closed by peer" << std::endl;
+           return false;
+       } else if (ret < 0) {
+           std::cerr << "[recv_playerpacket] recv error: " << strerror(errno) << std::endl;
+                   return false;
+       } else if (ret != sizeof(PlayerNumPacket) - sizeof(int)) {
+                   std::cerr << "[recv_playerpacket] Incomplete read: " << ret << " bytes" << std::endl;
+                   return false;
+       }
+       return true;
 }
 
 bool recv_playerCntpacket(int fd, PlayerCntPacket& pkt) {
-    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+    ssize_t ret = recv(fd, ((char*)&pkt) + sizeof(int), sizeof(PlayerCntPacket) - sizeof(int), MSG_WAITALL);
+        if (ret == 0) {
+            std::cerr << "[recv_playerCntpacket] Connection closed by peer" << std::endl;
+            return false;
+        } else if (ret < 0) {
+            std::cerr << "[recv_playerCntpacket] recv error: " << strerror(errno) << std::endl;
+            return false;
+        } else if (ret != sizeof(PlayerCntPacket) - sizeof(int)) {
+            std::cerr << "[recv_playerCntpacket] Incomplete read: " << ret << " bytes" << std::endl;
+            return false;
+        }
+        return true;
 }
 
 void send_drawpacket(int fd, const DrawPacket& pkt) {
-    send(fd, &pkt, sizeof(pkt), 0);
+    send(fd, &pkt.type, sizeof(int), 0); // type
+    send(fd, ((char*)&pkt) + sizeof(int), sizeof(DrawPacket) - sizeof(int), 0);
 }
 
 bool recv_drawpacket(int fd, DrawPacket& pkt) {
-    return recv(fd, &pkt, sizeof(pkt), MSG_WAITALL) == sizeof(pkt);
+    ssize_t ret = recv(fd, ((char*)&pkt) + sizeof(int), sizeof(DrawPacket) - sizeof(int), MSG_WAITALL);
+        if (ret == 0) {
+            std::cerr << "[recv_drawpacket] Connection closed by peer" << std::endl;
+            return false;
+        } else if (ret < 0) {
+            std::cerr << "[recv_drawpacket] recv error: " << strerror(errno) << std::endl;
+            return false;
+        } else if (ret != sizeof(DrawPacket) - sizeof(int)) {
+            std::cerr << "[recv_drawpacket] Incomplete read: " << ret << " bytes" << std::endl;
+            return false;
+        }
+            return true;
 }
 
 void send_answerpacket(int fd, const AnswerPacket& pkt) {
@@ -61,40 +96,18 @@ void send_answerpacket(int fd, const AnswerPacket& pkt) {
     send_string(fd, pkt.answer);
 }
 
-void send_correctpacket(int fd, const CorrectPacket& pkt) {
-    send(fd, &pkt.type, sizeof(pkt.type), 0);
-    send_string(fd, pkt.nickname);
-}
-
-bool recv_correctpacket(int fd, CorrectPacket& pkt) {
-    int header;
-    if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
-    pkt.type = header;
-    pkt.nickname = recv_string(fd);
-    return true;
-}
-
-void send_wrongpacket(int fd, const WrongPacket& pkt) {
-    send(fd, &pkt.type, sizeof(pkt.type), 0);
-    send_string(fd, pkt.message);
-}
-
-bool recv_wrongpacket(int fd, WrongPacket& pkt) {
-    int header;
-    if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
-    pkt.type = header;
-    pkt.nickname = recv_string(fd);
-    pkt.message = recv_string(fd);
-    return true;
-}
-
 bool recv_commonpacket(int fd, CommonPacket& pkt) {
-    int header;
-    if (recv(fd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) return false;
-    pkt.type = header;
     pkt.nickname = recv_string(fd);
-    pkt.message = recv_string(fd);
-    return true;
+       if (pkt.nickname.empty()) {
+           std::cerr << "[recv_commonpacket] Nickname read error" << std::endl;
+           return false;
+       }
+     pkt.message = recv_string(fd);
+       if (pkt.message.empty()) {
+           std::cerr << "[recv_commonpacket] Message read error" << std::endl;
+           return false;
+     }
+     return true;
 }
 
 
@@ -112,7 +125,7 @@ void recv_thread(int sockfd) {
 
     while (true) {
         int msg_type = 0;
-        ssize_t n = recv(sockfd, &msg_type, sizeof(int), MSG_PEEK);
+        ssize_t n = recv(sockfd, &msg_type, sizeof(int), 0);
         if (n <= 0) {
             // 서버가 MSG_REJECTED 없이 정상적으로 끊은 경우 메시지박스 X
             if (isRejected) {
@@ -122,7 +135,9 @@ break;
         }
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!1d"<<std::endl;
             if (!recv_drawpacket(sockfd, pkt)) break;
+            std::cout << "X " << pkt.x << "y " <<pkt.y<<std::endl;
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -187,27 +202,36 @@ break;
 
          }
         else if (msg_type == MSG_REJECTED) {
-    int dummy;
-    recv(sockfd, &dummy, sizeof(dummy), 0); // consume
-    isRejected = true;
-    QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
-    disconnect_client();
-    break;
-    } else if (msg_type == MSG_SELECTED_PLAYER) {
-        int header;
-        if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
-        std::string selected_nickname = recv_string(sockfd);
-        std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
+            //int dummy;
+            //recv(sockfd, &dummy, sizeof(dummy), 0); // consume
+            isRejected = true;
+            QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+            disconnect_client();
+            break;
+        } else if (msg_type == MSG_SELECTED_PLAYER) {
+            //int header;
+            //if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
+            std::string selected_nickname = recv_string(sockfd);
+            std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
 
-        QMetaObject::invokeMethod(
-            g_mainWindow,
-            "onSelectedPlayerNickname",
-            Qt::QueuedConnection,
-            Q_ARG(QString, QString::fromStdString(selected_nickname))
-        );
-     }      else {
-        char buf[256];
-        recv(sockfd, buf, sizeof(buf), 0);
+            QMetaObject::invokeMethod(
+                g_mainWindow,
+                "onSelectedPlayerNickname",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromStdString(selected_nickname))
+            );
+        } else if (msg_type == MSG_ERASE_ALL) {
+            qDebug() << "Received rease\n";
+            if (g_thirdWindow && g_thirdWindow->drawingWidget) {
+                    QMetaObject::invokeMethod(
+                        g_thirdWindow->drawingWidget,
+                        "erase",
+                        Qt::QueuedConnection
+                    );
+            }
+        } else {
+            char buf[256];
+            recv(sockfd, buf, sizeof(buf), 0);
         }
     }
     std::cout << "Sever Disconnected\n";
@@ -230,10 +254,16 @@ void send_answer(const std::string& ans){
     send_answerpacket(sockfd, apkt);
     std::cout << "[Send answer] : " << apkt.answer << std::endl;
 }
+void send_erase(){
+    EraseAllPacket erase_pkt;
+    erase_pkt.type = MSG_ERASE_ALL;
+    qDebug()<<"send erase!!";
+    send(sockfd, &erase_pkt, sizeof(erase_pkt), 0);
+}
 
 void run_client(int maxPlayer) {
     if (sockfd > 0) {
-            //qDebug() << "Already connected!";
+            //qDebug()  << "Already connected!";
             return;
         }
     desiredMaxPlayer = maxPlayer;

@@ -39,11 +39,6 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
-    // button monitoring
-    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
-        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
-            drawingWidget->erase();
-        });
 
     // timer
     timer = new QTimer(this);

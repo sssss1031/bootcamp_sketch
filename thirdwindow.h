@@ -16,6 +16,7 @@ class ThirdWindow : public QMainWindow
 
 public:
     explicit ThirdWindow(int maxPlayer = 2, QWidget *parent = nullptr);
+    TouchDrawingWidget *drawingWidget;
     ~ThirdWindow();
 
 
@@ -25,7 +26,7 @@ signals:
 private:
     int m_maxPlayer;
     Ui::ThirdWindow *ui;
-    TouchDrawingWidget *drawingWidget;
+
     QTime ElapsedTime;
     QTimer *timer;
     void timeoverRound();
