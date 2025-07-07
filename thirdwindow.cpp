@@ -121,22 +121,12 @@ void ThirdWindow::onLineEditReturnPressed()
         }
 }
 
-void ThirdWindow::showEvent(QShowEvent* event)
-{
-    QMainWindow::showEvent(event);
-
-    QTimer::singleShot(0, this, [this]() {
-            while (round_start) {
-                timer->start(1000);
-                round_start = false;
-                break;
-            }
-    });
-}
-
 void ThirdWindow::onBeginRound()
 {
     round_start = true;
+    qDebug()<<"onBeginRound";
+    timer->start(1000);
+
 }
 
 //메시지 채팅
@@ -237,7 +227,7 @@ void ThirdWindow::nextRound(int correct_num)
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
-    else { g_secondWindow->hide(); this->show(); }
+    else { this->hide(); this->show(); }
 }
 
 void ThirdWindow::updateTime()
@@ -246,6 +236,7 @@ void ThirdWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+        qDebug() << "ThirdWindow address:" << this;
         if (ElapsedTime < QTime(0,0,31))
         {
             ui->timelabel->setStyleSheet("color: red;");

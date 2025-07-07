@@ -183,8 +183,11 @@ void recv_thread(int sockfd) {
                 Q_ARG(QString, qmsg)
             );
 
-            if (g_thirdWindow) {
+            if (g_thirdWindow && g_thirdWindow->isVisible()) {
                 QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
+            }
+            else if (g_secondWindow && g_secondWindow->isVisible()) {
+                QMetaObject::invokeMethod(g_secondWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             }
 
             handle_device_control_request(LED_CORRECT);
@@ -304,13 +307,11 @@ void recv_thread(int sockfd) {
                     );
             }
         } else if (msg_type == MSG_SET_TRUE_ANSWER){
-            std::string answer = recv_string(sockfd);
+            qDebug()<<"receive answer";
             QMetaObject::invokeMethod(
                 g_thirdWindow,
                 "onBeginRound",
-                Qt::QueuedConnection,
-                Q_ARG(QString, QString::fromStdString(answer))
-                        );
+                Qt::QueuedConnection);
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
@@ -337,7 +338,7 @@ void send_answer(const std::string& ans){
     std::cout << "[Send answer] : " << apkt.answer << std::endl;
 }
 void send_erase(){
-    EraseAllPacket erase_pkt;
+    SendTypePacket erase_pkt;
     erase_pkt.type = MSG_ERASE_ALL;
     send(sockfd, &erase_pkt, sizeof(erase_pkt), 0);
 }
