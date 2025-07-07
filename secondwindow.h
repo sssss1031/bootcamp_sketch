@@ -5,7 +5,7 @@
 #include <QTime>
 #include <QTimer>
 #include "touchdrawingwidget.h"
-
+#define TIME_OVER 9999
 namespace Ui {
 class SecondWindow;
 }
@@ -31,7 +31,7 @@ private:
     QTimer *timer;
     QTimer *count_timer;
     void timeoverRound();
-    void nextRound();
+    void nextRound(int correct_num);
 
     const int originX = 110;
     const int originY = 20;

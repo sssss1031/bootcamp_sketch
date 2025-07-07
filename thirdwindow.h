@@ -5,7 +5,7 @@
 #include <QTime>
 #include <QTimer>
 #include "touchdrawingwidget.h"
-
+#define TIME_OVER 9999
 namespace Ui {
 class ThirdWindow;
 }
@@ -31,11 +31,14 @@ private:
     int m_count;
     QTimer *timer;
     QTimer *count_timer;
+    bool round_start = false;
+
     void timeoverRound();
-    void nextRound();
+    void nextRound(int correct_num);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
     void onLineEditReturnPressed();
@@ -44,6 +47,7 @@ private slots:
     void correctRound(const QString &message);
     void updateTime();
     void updateCountdown();
+    void onBeginRound();
 };
 
 #endif // THIRDWINDOW_H

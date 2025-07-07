@@ -86,7 +86,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
@@ -174,6 +173,7 @@ void SecondWindow::showEvent(QShowEvent* event) {
             // === 정답 라벨에 표시 ===
             ui->label_answer->setText(QString("Your answer: %1").arg(word));
             send_set_true_answer(word);
+            timer->start(1000);
         });
     }
 
@@ -187,7 +187,6 @@ void SecondWindow::appendChatMessage(const QString& message) {
 void SecondWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
 
-    // CORRECT : change questioner
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
 
@@ -207,8 +206,9 @@ void SecondWindow::correctRound(const QString& message){
     QTimer::singleShot(9000, this, [=](){
         ui->correct->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(correct_num);
     });
+
 }
 
 void SecondWindow::timeoverRound(){
@@ -227,11 +227,11 @@ void SecondWindow::timeoverRound(){
     QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(TIME_OVER);
     });
 }
 
-void SecondWindow::nextRound()
+void SecondWindow::nextRound(int correct_num)
 {
     // widget
     drawingWidget->erase();
@@ -241,12 +241,15 @@ void SecondWindow::nextRound()
     ElapsedTime = QTime(0,0,20);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
-    // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     // countdown timer
     m_count = 8;
     count_timer->stop();
+
+    // change window UI
+    if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
+    if (correct_num == retMyNum()) { g_thirdWindow->hide(); this->show(); }
+    else { this->hide(); g_thirdWindow->show(); }
 }
 
 void SecondWindow::onPenChanged(int color, int width)

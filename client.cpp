@@ -274,6 +274,14 @@ void recv_thread(int sockfd) {
                         Qt::QueuedConnection
                     );
             }
+        } else if (msg_type == MSG_SET_TRUE_ANSWER){
+            std::string answer = recv_string(sockfd);
+            QMetaObject::invokeMethod(
+                g_thirdWindow,
+                "onBeginRound",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromStdString(answer))
+                        );
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
