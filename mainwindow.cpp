@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 //    SoundExecutor::playOnLoop("bgm.wav");
 
-    PlayBgm::playOnLoop("bgm.wav");
+    //PlayBgm::playOnLoop("bgm.wav");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -66,7 +66,7 @@ void MainWindow::on_pushButton_3p_clicked()
 
 void MainWindow::on_pushButton_2p_clicked()
 {
-    desiredMaxPlayer = 1;
+    desiredMaxPlayer = 2;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
 }

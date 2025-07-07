@@ -5,6 +5,7 @@
 #include <QTime>
 #include <QTimer>
 #include "touchdrawingwidget.h"
+#include "scorelist.h"
 
 namespace Ui {
 class ThirdWindow;
@@ -44,6 +45,9 @@ private slots:
     void correctRound(const QString &message);
     void updateTime();
     void updateCountdown();
+
+public slots:
+    void updateScoreboard(const ScoreList& players);
 };
 
 #endif // THIRDWINDOW_H

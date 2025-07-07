@@ -127,7 +127,7 @@ void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int co
                     case BLACK: qcolor = Qt::black; break;
                     case YELLOW: qcolor = Qt::yellow; break;
                     case RED: qcolor = Qt::red; break;
-                    case GREEN: color = Qt::green; break;
+                    case GREEN: qcolor = Qt::green; break;
                     case BLUE: qcolor = Qt::blue; break;
                     case WHITE: qcolor = Qt::white; break;
                     case ERASER: color = Qt::white; break;
@@ -194,6 +194,7 @@ void TouchDrawingWidget::reset()
     update();
     penColor=1;
     penWidth=11;
+    emit penChanged(penColor, penWidth);
 }
 
 void TouchDrawingWidget::keyPressEvent(QKeyEvent *event)

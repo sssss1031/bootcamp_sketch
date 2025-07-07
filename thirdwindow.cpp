@@ -50,6 +50,19 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
             drawingWidget->erase();
         });
 
+    QGridLayout* grid = qobject_cast<QGridLayout*>(ui->scoreboard->layout());
+        if (grid) {
+            grid->addWidget(ui->P1, 0, 0);
+            grid->addWidget(ui->P1_score, 1, 0);
+            grid->addWidget(ui->P2, 0, 1);
+            grid->addWidget(ui->P2_score, 1, 1);
+            grid->addWidget(ui->P3, 0, 2);
+            grid->addWidget(ui->P3_score, 1, 2);
+        }
+        if (g_hasPendingScore) {
+            updateScoreboard(g_pendingScoreList);
+            g_hasPendingScore = false;
+        }
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
@@ -141,6 +154,34 @@ void ThirdWindow::correctRound(const QString& message){
     });
 }
 
+void ThirdWindow::updateScoreboard(const ScoreList& players)
+{
+
+    qDebug() << "updateScoreboard called, players:" << players.size();
+
+    QLabel* nameLabels[3] = {ui->P1, ui->P2, ui->P3};
+    QLabel* scoreLabels[3] = {ui->P1_score, ui->P2_score, ui->P3_score};
+
+    for (int i = 0; i < 3; ++i) {
+            nameLabels[i]->setVisible(false);
+            scoreLabels[i]->setVisible(false);
+        }
+
+     int n = players.size();
+     int start_col = (3-n)/2;
+
+     for (int i = 0; i < n; ++i) {
+             int idx = start_col + i;
+             if (idx < 0 || idx >= 3) continue;
+             nameLabels[idx]->setText(players[i].first);
+             scoreLabels[idx]->setText(QString::number(players[i].second));
+             nameLabels[idx]->setVisible(true);
+             scoreLabels[idx]->setVisible(true);
+         }
+
+         ui->scoreboard->update();
+}
+
 void ThirdWindow::timeoverRound(){
     qDebug() << "time over";
 
@@ -203,6 +244,6 @@ void ThirdWindow::updateCountdown()
     {
         m_count--;
         ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-        qDebug() << "m_count:" << m_count;
+        //qDebug() << "m_count:" << m_count;
     }
 }

@@ -9,6 +9,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+class SecondWindow;
+class ThirdWindow;
 
 class MainWindow : public QMainWindow
 {

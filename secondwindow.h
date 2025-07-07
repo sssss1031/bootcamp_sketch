@@ -5,6 +5,7 @@
 #include <QTime>
 #include <QTimer>
 #include "touchdrawingwidget.h"
+#include "scorelist.h"
 
 namespace Ui {
 class SecondWindow;
@@ -51,6 +52,9 @@ private slots:
     void onPenChanged(int color, int width);
     void updateTime();
     void updateCountdown();
+
+public slots:
+    void updateScoreboard(const ScoreList& players);
 };
 
 #endif // SECONDWINDOW_H
