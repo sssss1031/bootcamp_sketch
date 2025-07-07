@@ -12,6 +12,7 @@
 #include <chrono>
 #include <QDebug>
 #include "secondwindow.h"
+#include "thirdwindow.h"
 #include <QMessageBox>
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
@@ -187,27 +188,36 @@ break;
 
          }
         else if (msg_type == MSG_REJECTED) {
-    int dummy;
-    recv(sockfd, &dummy, sizeof(dummy), 0); // consume
-    isRejected = true;
-    QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
-    disconnect_client();
-    break;
-    } else if (msg_type == MSG_SELECTED_PLAYER) {
-        int header;
-        if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
-        std::string selected_nickname = recv_string(sockfd);
-        std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
+            int dummy;
+            recv(sockfd, &dummy, sizeof(dummy), 0); // consume
+            isRejected = true;
+            QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
+            disconnect_client();
+            break;
+        } else if (msg_type == MSG_SELECTED_PLAYER) {
+            int header;
+            if (recv(sockfd, &header, sizeof(header), MSG_WAITALL) != sizeof(header)) break;
+            std::string selected_nickname = recv_string(sockfd);
+            std::cout << "[Selected Player] " << selected_nickname << " is selected!\n";
 
-        QMetaObject::invokeMethod(
-            g_mainWindow,
-            "onSelectedPlayerNickname",
-            Qt::QueuedConnection,
-            Q_ARG(QString, QString::fromStdString(selected_nickname))
-        );
-     }      else {
-        char buf[256];
-        recv(sockfd, buf, sizeof(buf), 0);
+            QMetaObject::invokeMethod(
+                g_mainWindow,
+                "onSelectedPlayerNickname",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromStdString(selected_nickname))
+            );
+        } else if (msg_type == MSG_ERASE_ALL) {
+            qDebug() << "Received rease\n";
+            if (g_thirdWindow && g_thirdWindow->drawingWidget) {
+                    QMetaObject::invokeMethod(
+                        g_thirdWindow->drawingWidget,
+                        "erase",
+                        Qt::QueuedConnection
+                    );
+            }
+        } else {
+            char buf[256];
+            recv(sockfd, buf, sizeof(buf), 0);
         }
     }
     std::cout << "Sever Disconnected\n";
@@ -229,6 +239,12 @@ void send_answer(const std::string& ans){
     apkt.answer = ans;
     send_answerpacket(sockfd, apkt);
     std::cout << "[Send answer] : " << apkt.answer << std::endl;
+}
+void send_erase(){
+    EraseAllPacket erase_pkt;
+    erase_pkt.type = MSG_ERASE_ALL;
+    qDebug()<<"send erase!!";
+    send(sockfd, &erase_pkt, sizeof(erase_pkt), 0);
 }
 
 void run_client(int maxPlayer) {

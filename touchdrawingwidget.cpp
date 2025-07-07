@@ -55,22 +55,6 @@ bool TouchDrawingWidget::event(QEvent *event)
                                         send_coordinate(currentPoint.x(), currentPoint.y(), penColor, penWidth, 1);
                                     }
                                     break;
-                    case QEvent::TouchEnd:
-                                    if (drawing) {
-                                        QPainter painter(&canvas);
-                                        painter.setRenderHint(QPainter::Antialiasing);
-
-                                        QColor color;
-                                        switch(penColor) {
-                                            case BLACK: color = Qt::black; break;
-                                            case YELLOW: color = Qt::yellow; break;
-                                            case RED: color = Qt::red; break;
-                                            case GREEN: color = Qt::green; break;
-                                            case BLUE: color = Qt::blue; break;
-                                            case WHITE: color = Qt::white; break;
-                                            case ERASER: color = Qt::white; break;
-                                        }
-                                        break;
                         case QEvent::TouchEnd:
                                         if (drawing) {
                                             QPainter painter(&canvas);
@@ -81,6 +65,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                                 case BLACK: color = Qt::black; break;
                                                 case YELLOW: color = Qt::yellow; break;
                                                 case RED: color = Qt::red; break;
+                                                case GREEN: color = Qt::green; break;
                                                 case BLUE: color = Qt::blue; break;
                                                 case WHITE: color = Qt::white; break;
                                             }
@@ -110,6 +95,7 @@ bool TouchDrawingWidget::event(QEvent *event)
 
         return QWidget::event(event);;
 }
+
 
 void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int color, int thick)
 {
@@ -198,6 +184,7 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
 void TouchDrawingWidget::erase()
 {
     canvas.fill(Qt::white);
+    qDebug() << "erasecalled\n";
     update();
 }
 

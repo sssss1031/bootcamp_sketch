@@ -40,8 +40,13 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     auto *btnMon = new ButtonMonitor("/dev/mydev", this);
         connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
             switch(idx) {
-                           case 0: drawingWidget->setEraser(); break;
-                           case 1: drawingWidget->erase(); break;
+                           case 0:
+                                drawingWidget->setEraser();break;
+                           case 1:
+                                drawingWidget->erase();
+                                send_erase();
+                                qDebug() << "eraseall";
+                                break;
                            case 2: drawingWidget->colorClicked(); break;
                            case 3: drawingWidget->widthUp(); break;
                            case 4: drawingWidget->widthDown(); break;

@@ -14,7 +14,6 @@ public:
     explicit TouchDrawingWidget(QWidget *parent = nullptr);
     //void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
     void setEraseMode(bool enabled);
-    void erase();
     void reset();
     void widthUp();
     void widthDown();
@@ -62,6 +61,7 @@ public slots:
     void onDrawPacket(int drawStatus, double x, double y, int color, int thick);
     void colorClicked();
     void widthClicked();
+    void erase();
 
 signals:
     void penChanged(int c, int w);
