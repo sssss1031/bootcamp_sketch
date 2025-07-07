@@ -19,6 +19,8 @@ public:
     TouchDrawingWidget *drawingWidget;
     ~SecondWindow();
 
+public slots:
+    void setMyNum(int num);
 
 signals:
     void backToMain();
@@ -51,6 +53,7 @@ private slots:
     void onPenChanged(int color, int width);
     void updateTime();
     void updateCountdown();
+    void resetPenButtons();
 };
 
 #endif // SECONDWINDOW_H

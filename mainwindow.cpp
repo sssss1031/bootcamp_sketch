@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 //    SoundExecutor::playOnLoop("bgm.wav");
 
-    //PlayBgm::playOnLoop("bgm.wav");
+//    PlayBgm::playOnLoop("bgm.wav");
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -91,7 +91,6 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
         selectedNum = rx.cap(1).toInt();
     }
     // 내 번호와 비교
-    selectedNum = 2;
     if (selectedNum == my_Num) {
         // SecondWindow 띄우기
         if (!secondWindow) {
@@ -107,6 +106,7 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
                 }
             });
             g_secondWindow = secondWindow;
+            secondWindow->setMyNum(my_Num);
         }
         secondWindow->show();
         this->hide();

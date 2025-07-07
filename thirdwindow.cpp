@@ -22,6 +22,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
+    drawingWidget->setEnabled(false);
     ui->countdown->hide();
 
     // backbutton 클릭 시 backToMain 신호 발생

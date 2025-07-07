@@ -29,6 +29,11 @@ void TouchDrawingWidget::resizeEvent(QResizeEvent *event)
 
 bool TouchDrawingWidget::event(QEvent *event)
 {
+    if (!isEnabled()) {
+            // 비활성화 상태면 입력 무시
+            return QWidget::event(event);
+        }
+
     if (event->type() == QEvent::TouchBegin ||
             event->type() == QEvent::TouchUpdate ||
             event->type() == QEvent::TouchEnd) {
