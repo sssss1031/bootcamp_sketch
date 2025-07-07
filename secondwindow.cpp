@@ -11,7 +11,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
-    ElapsedTime(0,2,0)
+    ElapsedTime(0,0,20),
+    m_count(8)
+
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -21,14 +23,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
 
+    ui->countdown->hide();
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
-
-    // enter key
-    connect(ui->lineEdit, &QLineEdit::returnPressed, this, &SecondWindow::onLineEditReturnPressed);
-
-    // enterButton
-    connect(ui->enterButton, &QPushButton::clicked, this, &SecondWindow::onLineEditReturnPressed);
 
     // send Packet
     connect(&DrawingDispatcher::instance(), &DrawingDispatcher::drawArrived, this,
@@ -76,7 +73,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->colorbutton->raise();
     ui->widthbutton->raise();
 
-
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
@@ -84,6 +80,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
     timer->start(1000);
+
+    count_timer = new QTimer(this);
+    connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
 
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
@@ -120,18 +119,18 @@ void SecondWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-void SecondWindow::onLineEditReturnPressed()
-{
-    QString text = ui->lineEdit->text();
-    if (text.isEmpty()) {
-            qDebug() << "Nothing.";
-            send_answer("Nothing");
-        } else {
-            qDebug() << "Answer:" << text;
-            send_answer(text.toStdString());
-            // 추가 동작 필요 시 여기에 작성
-        }
-}
+//void SecondWindow::onLineEditReturnPressed()
+//{
+//    QString text = ui->lineEdit->text();
+//    if (text.isEmpty()) {
+//            qDebug() << "Nothing.";
+//            send_answer("Nothing");
+//        } else {
+//            qDebug() << "Answer:" << text;
+//            send_answer(text.toStdString());
+//            // 추가 동작 필요 시 여기에 작성
+//        }
+//}
 
 //메시지 채팅
 void SecondWindow::appendChatMessage(const QString& message) {
@@ -139,18 +138,51 @@ void SecondWindow::appendChatMessage(const QString& message) {
     ui->textEdit->append(message);
 }
 
-void SecondWindow::endRound(const QString& message){
-    qDebug() << "endRound! msg: " << message;
+void SecondWindow::correctRound(const QString& message){
+    qDebug() << "correct! msg: " << message;
 
     // CORRECT : change questioner
-    //int correct_num =
+    int correct_num = message.mid(16,1).toInt();
+    int colon = message.indexOf(':');
 
-    //if (retMyNum() == correct_num) true;
 
-    // TODO: time over -> maintain
+    ui->correct->setText("correct! : Player " + QString::number(correct_num) + "\nANSWER : " +
+                         message.mid(colon + 1).trimmed());
+    ui->correct->raise();
+    ui->correct->show();
+    timer->stop();
 
-    // reset window
-    nextRound();
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
+    // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
+        ui->correct->hide();
+        ui->countdown->hide();
+        nextRound();
+    });
+}
+
+void SecondWindow::timeoverRound(){
+    qDebug() << "time over";
+
+    ui->timeover->raise();
+    ui->timeover->show();
+    timer->stop();
+
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
+    // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
+        ui->timeover->hide();
+        ui->countdown->hide();
+        nextRound();
+    });
 }
 
 void SecondWindow::nextRound()
@@ -160,16 +192,16 @@ void SecondWindow::nextRound()
     drawingWidget->reset();
 
     // timer
-    timer = new QTimer(this);
-    connect(timer, &QTimer::timeout, this, &SecondWindow::updateTime);
-    ElapsedTime = QTime(0,2,0);
+    ElapsedTime = QTime(0,0,20);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
     timer->start(1000);
 
+    // countdown timer
+    m_count = 8;
+    count_timer->stop();
 }
-
 
 void SecondWindow::onPenChanged(int color, int width)
 {
@@ -205,6 +237,10 @@ void SecondWindow::onPenChanged(int color, int width)
         QString("border-radius: %1px; background: black; border: 2px solid #888;")
             .arg(qw/2)
     );
+
+    // countdown timer
+    m_count = 8;
+    count_timer->stop();
 }
 
 void SecondWindow::updateTime()
@@ -219,5 +255,18 @@ void SecondWindow::updateTime()
         }
         qDebug() << ElapsedTime.toString("mm:ss");
     }
-    else { timer->stop(); }
+    else {
+        timeoverRound();
+    }
+}
+
+void SecondWindow::updateCountdown()
+{
+
+    if (m_count > 0)
+    {
+        m_count--;
+        ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+        qDebug() << "m_count:" << m_count;
+    }
 }

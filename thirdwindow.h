@@ -26,9 +26,10 @@ signals:
 private:
     int m_maxPlayer;
     Ui::ThirdWindow *ui;
-
     QTime ElapsedTime;
+    int m_count;
     QTimer *timer;
+    QTimer *count_timer;
     void timeoverRound();
     void nextRound();
 
@@ -41,7 +42,7 @@ private slots:
     void appendChatMessage(const QString& message);
     void correctRound(const QString &message);
     void updateTime();
+    void updateCountdown();
 };
 
 #endif // THIRDWINDOW_H
-

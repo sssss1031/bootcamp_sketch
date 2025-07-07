@@ -9,7 +9,6 @@
 #include "mainwindow.h"
 
 //void run_client();
-
 void run_client(int maxPlayer);
 extern void disconnect_client();
 bool recv_drawpacket(int fd, DrawPacket& pkt);

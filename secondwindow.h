@@ -16,6 +16,7 @@ class SecondWindow : public QMainWindow
 
 public:
     explicit SecondWindow(int maxPlayer = 2, QWidget *parent = nullptr);
+    TouchDrawingWidget *drawingWidget;
     ~SecondWindow();
 
 
@@ -25,10 +26,11 @@ signals:
 private:
     int m_maxPlayer;
     Ui::SecondWindow *ui;
-    TouchDrawingWidget *drawingWidget;
     QTime ElapsedTime;
+    int m_count;
     QTimer *timer;
-    void endRound(const QString& message);
+    QTimer *count_timer;
+    void timeoverRound();
     void nextRound();
 
     const int originX = 110;
@@ -41,11 +43,13 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private slots:
-    void onLineEditReturnPressed();
+    //void onLineEditReturnPressed();
     void backToMainRequested();
     void appendChatMessage(const QString& message);
+    void correctRound(const QString &message);
     void onPenChanged(int color, int width);
     void updateTime();
+    void updateCountdown();
 };
 
 #endif // SECONDWINDOW_H
