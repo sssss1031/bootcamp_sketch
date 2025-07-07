@@ -2,13 +2,22 @@
 #include <future>
 #include <spawn.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include <QDebug>
+
+static const std::string MUSIC_DIR = "/mnt/sd/music/";
 
 PlayBgm::PlayBgm()
 { }
 
 void PlayBgm::playOnLoop(const std::string& wavFileName)
 {
+    std::string musicFilePath = MUSIC_DIR + wavFileName;
+    if (access(musicFilePath.c_str(), F_OK) == -1) {
+        // if file is not existed
+        return;
+    }
+
     std::thread th(PlayBgm::inPlayOnLoop, wavFileName);
     th.detach();
 }
@@ -24,7 +33,7 @@ void PlayBgm::inPlayOnLoop(const std::string& wavFileName)
         "0",
         "cset",
         "numid=1",
-        "80%",
+        "1%",
         NULL
     };
 
@@ -60,6 +69,12 @@ void PlayBgm::inPlayOnLoop(const std::string& wavFileName)
 
 void PlayBgm::playOnce(const std::string& wavFileName)
 {
+    std::string musicFilePath = MUSIC_DIR + wavFileName;
+    if (access(musicFilePath.c_str(), F_OK) == -1) {
+        // if file is not existed
+        return;
+    }
+
     std::thread th(PlayBgm::inPlayOnce, wavFileName);
     th.detach();
 }
@@ -75,7 +90,7 @@ void PlayBgm::inPlayOnce(const std::string& wavFileName)
         "0",
         "cset",
         "numid=1",
-        "80%",
+        "100%",
         NULL
     };
 

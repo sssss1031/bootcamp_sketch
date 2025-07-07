@@ -22,6 +22,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
+    drawingWidget->setEnabled(false);
     ui->countdown->hide();
 
     // backbutton 클릭 시 backToMain 신호 발생
@@ -68,8 +69,6 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
-    // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     // countdown timer
     count_timer = new QTimer(this);
@@ -122,6 +121,24 @@ void ThirdWindow::onLineEditReturnPressed()
         }
 }
 
+void ThirdWindow::showEvent(QShowEvent* event)
+{
+    QMainWindow::showEvent(event);
+
+    QTimer::singleShot(0, this, [this]() {
+            while (round_start) {
+                timer->start(1000);
+                round_start = false;
+                break;
+            }
+    });
+}
+
+void ThirdWindow::onBeginRound()
+{
+    round_start = true;
+}
+
 //메시지 채팅
 void ThirdWindow::appendChatMessage(const QString& message) {
     qDebug() << "appendChatMessage called:" << message;
@@ -150,7 +167,7 @@ void ThirdWindow::correctRound(const QString& message){
     QTimer::singleShot(9000, this, [=](){
         ui->correct->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(correct_num);
     });
 }
 
@@ -198,11 +215,11 @@ void ThirdWindow::timeoverRound(){
     QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(TIME_OVER);
     });
 }
 
-void ThirdWindow::nextRound()
+void ThirdWindow::nextRound(int correct_num)
 {
     // widget
     drawingWidget->erase();
@@ -212,12 +229,15 @@ void ThirdWindow::nextRound()
     ElapsedTime = QTime(0,0,20);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
-    // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     // countdown timer
     m_count = 8;
     count_timer->stop();
+
+    // change window UI
+    if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
+    if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
+    else { g_secondWindow->hide(); this->show(); }
 }
 
 void ThirdWindow::updateTime()

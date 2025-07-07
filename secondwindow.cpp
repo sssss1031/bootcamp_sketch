@@ -25,6 +25,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget = new TouchDrawingWidget(ui->frame);
     drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
+    drawingWidget->setEnabled(true);
 
     ui->countdown->hide();
     // backbutton 클릭 시 backToMain 신호 발생
@@ -100,13 +101,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
     // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
-
-    //run_client();
-    run_client(m_maxPlayer); // maxPlayer 인자 전달
 
     qDebug() << "second";
 
@@ -168,6 +165,11 @@ void SecondWindow::updateScoreboard(const ScoreList& players)
 
          ui->scoreboard->update();
 }
+//내 player 닉네임 띄우기
+void SecondWindow::setMyNum(int num) {
+    qDebug() << "setMyNum called, num=" << num;
+    ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
+}
 
 //입력창 띄우기
 void SecondWindow::showEvent(QShowEvent* event) {
@@ -203,6 +205,7 @@ void SecondWindow::showEvent(QShowEvent* event) {
             // === 정답 라벨에 표시 ===
             ui->label_answer->setText(QString("Your answer: %1").arg(word));
             send_set_true_answer(word);
+            timer->start(1000);
         });
     }
 
@@ -216,7 +219,6 @@ void SecondWindow::appendChatMessage(const QString& message) {
 void SecondWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
 
-    // CORRECT : change questioner
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
 
@@ -236,12 +238,15 @@ void SecondWindow::correctRound(const QString& message){
     QTimer::singleShot(9000, this, [=](){
         ui->correct->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(correct_num);
     });
+
 }
 
 void SecondWindow::timeoverRound(){
     qDebug() << "time over";
+
+    drawingWidget->setEnabled(false); //그림 안그려지게
 
     ui->timeover->raise();
     ui->timeover->show();
@@ -256,26 +261,32 @@ void SecondWindow::timeoverRound(){
     QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
-        nextRound();
+        nextRound(TIME_OVER);
     });
 }
 
-void SecondWindow::nextRound()
+void SecondWindow::nextRound(int correct_num)
 {
+    drawingWidget->setEnabled(true); //그림 그려지게 활성화
     // widget
     drawingWidget->erase();
     drawingWidget->reset();
+
+    resetPenButtons();
 
     // timer
     ElapsedTime = QTime(0,0,20);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
-    // 임시 : 바로 시작, 게임 시작 시 start(1000) 호출
-    timer->start(1000);
 
     // countdown timer
     m_count = 8;
     count_timer->stop();
+
+    // change window UI
+    if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
+    if (correct_num == retMyNum()) { g_thirdWindow->hide(); this->show(); }
+    else { this->hide(); g_thirdWindow->show(); }
 }
 
 void SecondWindow::onPenChanged(int color, int width)
@@ -316,6 +327,26 @@ void SecondWindow::onPenChanged(int color, int width)
     // countdown timer
     m_count = 8;
     count_timer->stop();
+}
+
+
+void SecondWindow::resetPenButtons()
+{
+    // 색상 버튼(초기: 검정)
+    QIcon colorIcon(QString(":/new/prefix1/black.png"));
+    ui->colorbutton->setIcon(colorIcon);
+    ui->colorbutton->setIconSize(QSize(55,55));
+
+    // 굵기 버튼(초기: 15)
+    int qw = 15;
+    int btnX = centerX - qw / 2;
+    int btnY = centerY - qw / 2;
+    ui->widthbutton->setGeometry(btnX, btnY, qw, qw);
+    ui->widthbutton->setIconSize(QSize(qw, qw));
+    ui->widthbutton->setStyleSheet(
+        QString("border-radius: %1px; background: black; border: 2px solid #888;")
+            .arg(qw/2)
+    );
 }
 
 void SecondWindow::updateTime()

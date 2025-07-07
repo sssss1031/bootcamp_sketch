@@ -17,6 +17,7 @@
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
 #include "chatmessagedispatcher.h"
+#include "playbgm.h"
 
 int sockfd = -1;
 int my_Num = 0;
@@ -169,6 +170,10 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_CORRECT) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
+
+            // Play sound correct
+            PlayBgm::playOnce("correct.wav");
+
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             QMetaObject::invokeMethod(
@@ -182,18 +187,19 @@ void recv_thread(int sockfd) {
                 QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             }
 
-                handle_device_control_request(LED_CORRECT);
-            }
-             else if (msg_type == MSG_WRONG) {
+            handle_device_control_request(LED_CORRECT);
+
+        } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
+
+            // Play sound wrong
+            PlayBgm::playOnce("wrong.wav");
+
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
             qDebug() << "g_secondWindow is" << (g_secondWindow == nullptr ? "nullptr" : "valid");
-
-//            if (g_secondWindow)
-//                QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
 
             QMetaObject::invokeMethod(
                     &ChatMessageDispatcher::instance(),
@@ -210,13 +216,23 @@ void recv_thread(int sockfd) {
             std::cout << "You are player" << pkt.player_num << std::endl;
             my_Num = pkt.player_num;
 
+            if (g_secondWindow) {
+                bool ok = QMetaObject::invokeMethod(
+                            g_secondWindow,
+                            "setMyNum",
+                            Qt::QueuedConnection,
+                            Q_ARG(int, pkt.player_num)
+                        );
+                        qDebug() << "invokeMethod setMyNum ok?" << ok;
+                    }
+
         }
         else if (msg_type == MSG_PLAYER_CNT) {
             PlayerCntPacket pkt;
             if(!recv_playerCntpacket(sockfd, pkt)) break;
 
             // 서버에서 받은 maxPlayer와 내가 원하는 값이 다르면,
-                // 메시지박스 띄우고, disconnect 후 recv_thread 종료
+            // 메시지박스 띄우고, disconnect 후 recv_thread 종료
             if (serverDisconnected) {
                     break;
                 }
@@ -287,6 +303,14 @@ void recv_thread(int sockfd) {
                         Qt::QueuedConnection
                     );
             }
+        } else if (msg_type == MSG_SET_TRUE_ANSWER){
+            std::string answer = recv_string(sockfd);
+            QMetaObject::invokeMethod(
+                g_thirdWindow,
+                "onBeginRound",
+                Qt::QueuedConnection,
+                Q_ARG(QString, QString::fromStdString(answer))
+                        );
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
