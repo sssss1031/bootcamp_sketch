@@ -41,6 +41,7 @@ private:
     const int centerY = originY + originH / 2;
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
     //void onLineEditReturnPressed();

@@ -16,6 +16,7 @@ int retMyNum();
 void send_answer(const std::string& ans);
 void send_erase();
 void send_coordinate(double x, double y, int penColor, int penWidth, int drawStatus);
+void send_set_true_answer(const QString& word);
 
 class SecondWindow;
 extern SecondWindow* g_secondWindow;

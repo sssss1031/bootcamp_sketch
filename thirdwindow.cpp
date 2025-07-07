@@ -6,6 +6,7 @@
 #include "client.h"
 #include "buttonmonitor.h"
 #include <QDebug>
+#include "chatmessagedispatcher.h"
 
 ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
@@ -38,6 +39,16 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
+
+    connect(&ChatMessageDispatcher::instance(), &ChatMessageDispatcher::chatMessageArrived,
+            this, &ThirdWindow::appendChatMessage);
+
+
+    // button monitoring
+    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
+        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
+            drawingWidget->erase();
+        });
 
     // timer
     timer = new QTimer(this);

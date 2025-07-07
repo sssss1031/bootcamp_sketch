@@ -6,6 +6,9 @@
 #include "client.h"
 #include "buttonmonitor.h"
 #include <QDebug>
+#include <QInputDialog>
+#include <QMessageBox>
+#include "chatmessagedispatcher.h"
 
 SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
@@ -33,6 +36,10 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
             if(drawingWidget) drawingWidget->onDrawPacket(drawStatus, x, y, color, thick);
         }
     );
+
+    connect(&ChatMessageDispatcher::instance(), &ChatMessageDispatcher::chatMessageArrived,
+            this, &SecondWindow::appendChatMessage);
+
     // button monitoring
     auto *btnMon = new ButtonMonitor("/dev/mydev", this);
         connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
@@ -88,6 +95,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     run_client(m_maxPlayer); // maxPlayer 인자 전달
 
     qDebug() << "second";
+
 }
 
 SecondWindow::~SecondWindow()
@@ -131,6 +139,44 @@ void SecondWindow::resizeEvent(QResizeEvent *event)
 //            // 추가 동작 필요 시 여기에 작성
 //        }
 //}
+
+//입력창 띄우기
+void SecondWindow::showEvent(QShowEvent* event) {
+    QMainWindow::showEvent(event);
+
+    QTimer::singleShot(0, this, [this]() {
+            bool ok = false;
+            QString word;
+            while (!ok || word.isEmpty()) {
+
+                QInputDialog inputDialog(this);
+                inputDialog.setWindowTitle("INPUT Value");
+                inputDialog.setLabelText("Input The Word to Draw:");
+                inputDialog.setInputMode(QInputDialog::TextInput);
+                inputDialog.setTextValue("");
+                inputDialog.resize(400, 400);
+
+                // 폰트 크기, 색상 등 전체 적용
+                inputDialog.setStyleSheet(R"(
+                    * { font-size: 30px; }
+                    QLabel { color: #333366; font-weight: bold; }
+                    QLineEdit { background: #f3f3fa; border: 2px solid #888; }
+                    QPushButton { background: #77aaff; color: white; font-size: 36px; border-radius: 10px; min-width: 80px; min-height: 40px; }
+                )");
+
+                if (inputDialog.exec() == QDialog::Accepted) {
+                    word = inputDialog.textValue();
+                    ok = true;
+                } else {
+                    QMessageBox::warning(this, "Notice", "Input the word to start game");
+                }
+            }
+            // === 정답 라벨에 표시 ===
+            ui->label_answer->setText(QString("Your answer: %1").arg(word));
+            send_set_true_answer(word);
+        });
+    }
+
 
 //메시지 채팅
 void SecondWindow::appendChatMessage(const QString& message) {
@@ -270,3 +316,4 @@ void SecondWindow::updateCountdown()
         qDebug() << "m_count:" << m_count;
     }
 }
+
