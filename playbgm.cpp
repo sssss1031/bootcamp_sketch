@@ -1,33 +1,118 @@
-#include <QProcess>
-#include <QObject>
-#include <QCoreApplication>
+#include "playbgm.h"
+#include <future>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <QDebug>
 
-class LoopBgm : public QObject {
-    Q_OBJECT
-public:
-    explicit LoopBgm(QObject *parent = nullptr)
-        : QObject(parent), process(nullptr) {}
+PlayBgm::PlayBgm()
+{ }
 
-    void startLoop(const QString &wavFile, const QString &device = "hw:3,0") {
-        this->wavFile = wavFile;
-        this->device  = device;
-        playOnce();
-    }
+void PlayBgm::playOnLoop(const std::string& wavFileName)
+{
+    std::thread th(PlayBgm::inPlayOnLoop, wavFileName);
+    th.detach();
+}
 
-private slots:
-    void playOnce() {
-        if (process) {
-            process->deleteLater();
-            process = nullptr;
+void PlayBgm::inPlayOnLoop(const std::string& wavFileName)
+{
+    pid_t pid = 0;
+    int status = 0;
+
+    char * const cmdVolumeArgv[] = {
+        "/usr/bin/amixer",
+        "-c"
+        "0",
+        "cset",
+        "numid=1",
+        "80%",
+        NULL
+    };
+
+    std::string bgmPath = "/mnt/sd/music/" + wavFileName;
+    char * const cmdPlayArgv[] = {
+        "/usr/bin/aplay",
+        "-Dhw:3,0",
+        const_cast<char*>(bgmPath.c_str()),
+        NULL
+    };
+
+    status = posix_spawn(&pid, "/usr/bin/amixer", NULL, NULL, cmdVolumeArgv, NULL);
+    if (status == 0)
+    {
+        if (waitpid(pid, &status, 0) == -1)
+        {
+            qDebug() << "posix_spawn_error 1 on volumeControl";
         }
-        process = new QProcess(this);
-        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                this, &LoopBgm::playOnce);
-        process->start("aplay", QStringList() << "-D" << device << wavFile);
     }
 
-private:
-    QString wavFile;
-    QString device;
-    QProcess *process;
-};
+    for (;;)
+    {
+        status = posix_spawn(&pid, "/usr/bin/aplay", NULL, NULL, cmdPlayArgv, NULL);
+        if (status == 0)
+        {
+            if (waitpid(pid, &status, 0) == -1)
+            {
+                qDebug() << "posix_spawn_error 1 on playBgmControl";
+            }
+        }
+    }
+}
+
+void PlayBgm::playOnce(const std::string& wavFileName)
+{
+    std::thread th(PlayBgm::inPlayOnce, wavFileName);
+    th.detach();
+}
+
+void PlayBgm::inPlayOnce(const std::string& wavFileName)
+{
+    pid_t pid = 0;
+    int status = 0;
+
+    char * const cmdVolumeArgv[] = {
+        "/usr/bin/amixer",
+        "-c"
+        "0",
+        "cset",
+        "numid=1",
+        "80%",
+        NULL
+    };
+
+    std::string bgmPath = "/mnt/sd/music/" + wavFileName;
+    char * const cmdPlayArgv[] = {
+        "/usr/bin/aplay",
+        "-Dhw:3,0",
+        const_cast<char*>(bgmPath.c_str()),
+        NULL
+    };
+
+    status = posix_spawn(&pid, "/usr/bin/amixer", NULL, NULL, cmdVolumeArgv, NULL);
+    if (status == 0)
+    {
+        if (waitpid(pid, &status, 0) == -1)
+        {
+            qDebug() << "posix_spawn_error 1 on volumeControl";
+        }
+    }
+    else
+    {
+        qDebug() << "paosix_spawn error status: " << status;
+    }
+
+    qDebug() << "Music start";
+    status = posix_spawn(&pid, "/usr/bin/aplay", NULL, NULL, cmdPlayArgv, NULL);
+    if (status == 0)
+    {
+        if (waitpid(pid, &status, 0) == -1)
+        {
+            qDebug() << "posix_spawn_error 1 on playBgmControl";
+        }
+    }
+    else
+    {
+        qDebug() << "paosix_spawn error status: " << status;
+    }
+
+    qDebug() << "Music end";
+}

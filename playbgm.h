@@ -1,40 +1,19 @@
-#ifndef PLAYBGM
-#define PLAYBGM
+#ifndef PLAYBGM_H
+#define PLAYBGM_H
 
-#include <QProcess>
-#include <QObject>
-#include <QCoreApplication>
+#include <string>
 
-class LoopBgm : public QObject {
-    Q_OBJECT
+class PlayBgm
+{
 public:
-    explicit LoopBgm(QObject *parent = nullptr)
-        : QObject(parent), process(nullptr) {}
+    PlayBgm();
 
-    void startLoop(const QString &wavFile, const QString &device = "hw:3,0") {
-        this->wavFile = wavFile;
-        this->device  = device;
-        playOnce();
-    }
-
-private slots:
-    void playOnce() {
-        if (process) {
-            process->deleteLater();
-            process = nullptr;
-        }
-        process = new QProcess(this);
-        connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-                this, &LoopBgm::playOnce);
-        process->start("aplay", QStringList() << "-D" << device << wavFile);
-    }
+    static void playOnLoop(const std::string& wavFileName);
+    static void playOnce(const std::string& wavFileName);
 
 private:
-    QString wavFile;
-    QString device;
-    QProcess *process;
+    static void inPlayOnLoop(const std::string& wavFileName);
+    static void inPlayOnce(const std::string& wavFileName);
 };
 
-
-#endif // PLAYBGM
-
+#endif // PLAYBGM_H

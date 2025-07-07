@@ -28,9 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     connect(&PlayerCountDispatcher::instance(), &PlayerCountDispatcher::playerCountUpdated, this, &MainWindow::onPlayerCountUpdated);
 
-    this->setAutoFillBackground(true);
-    LoopBgm *bgm = new LoopBgm(this);
-    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
+//    this->setAutoFillBackground(true);
+//    LoopBgm *bgm = new LoopBgm(this);
+//    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
+//    SoundExecutor::playOnLoop("bgm.wav");
+
+    PlayBgm::playOnLoop("bgm.wav");
+
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
