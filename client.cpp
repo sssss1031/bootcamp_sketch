@@ -17,6 +17,7 @@
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
 #include "chatmessagedispatcher.h"
+#include "playbgm.h"
 
 int sockfd = -1;
 int my_Num = 0;
@@ -155,6 +156,10 @@ break;
         } else if (msg_type == MSG_CORRECT) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
+
+            // Play sound correct
+            PlayBgm::playOnce("correct.wav");
+
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
 //            if (g_thirdWindow){
@@ -176,11 +181,15 @@ break;
                 QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
             }
 
-                handle_device_control_request(LED_CORRECT);
-            }
-             else if (msg_type == MSG_WRONG) {
+            handle_device_control_request(LED_CORRECT);
+
+        } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
+
+            // Play sound wrong
+            PlayBgm::playOnce("wrong.wav");
+
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;
             QString qmsg = QString("[Wrong] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
