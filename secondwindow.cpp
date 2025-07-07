@@ -153,7 +153,7 @@ void SecondWindow::showEvent(QShowEvent* event) {
                 inputDialog.setWindowTitle("INPUT Value");
                 inputDialog.setLabelText("Input The Word to Draw:");
                 inputDialog.setInputMode(QInputDialog::TextInput);
-                inputDialog.setTextValue("");
+                inputDialog.setTextValue("Nothing");
                 inputDialog.resize(400, 400);
 
                 // 폰트 크기, 색상 등 전체 적용
@@ -313,7 +313,7 @@ void SecondWindow::updateCountdown()
     {
         m_count--;
         ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-        qDebug() << "m_count:" << m_count;
+        //qDebug() << "m_count:" << m_count;
     }
 }
 

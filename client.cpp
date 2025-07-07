@@ -117,6 +117,20 @@ bool recv_commonpacket(int fd, CommonPacket& pkt) {
      return true;
 }
 
+bool recv_scorepacket(int fd, ScorePacket& pkt) {
+    uint32_t sz = 0;
+    ssize_t n = recv(fd, &sz, sizeof(sz), MSG_WAITALL);
+    if (n != sizeof(sz)) return false;
+    pkt.score.clear();
+    for (uint32_t i = 0; i < sz; ++i) {
+        std::string nick = recv_string(fd);
+        int score = 0;
+        n = recv(fd, &score, sizeof(score), MSG_WAITALL);
+        if (n != sizeof(score)) return false;
+        pkt.score.push_back({nick, score});
+    }
+    return true;
+}
 
 int retMyNum() {
     //return 0 means connection error
@@ -136,15 +150,12 @@ void recv_thread(int sockfd) {
         if (n <= 0) {
             // 서버가 MSG_REJECTED 없이 정상적으로 끊은 경우 메시지박스 X
             if (isRejected) {
-                //QMetaObject::invokeMethod(g_mainWindow, "showConnectionRejectedMessage", Qt::QueuedConnection);
-break;
-}
+                break;
+            }
         }
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
-            std::cout << "!!!!!!!!!!!!!!!!!!!!!1d"<<std::endl;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            std::cout << "X " << pkt.x << "y " <<pkt.y<<std::endl;
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -157,14 +168,6 @@ break;
             if (!recv_commonpacket(sockfd, pkt)) break;
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
-//            if (g_thirdWindow){
-//                    QMetaObject::invokeMethod(g_thirdWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-//                    QMetaObject::invokeMethod(g_thirdWindow, "correctRound", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-//                }
-//                if (g_secondWindow){
-//                    QMetaObject::invokeMethod(g_secondWindow, "appendChatMessage", Qt::QueuedConnection, Q_ARG(QString, qmsg));
-//                }
-
             QMetaObject::invokeMethod(
                 &ChatMessageDispatcher::instance(),
                 "chatMessageArrived",
@@ -248,8 +251,13 @@ break;
                 Qt::QueuedConnection,
                 Q_ARG(QString, QString::fromStdString(selected_nickname))
             );
+        } else if (msg_type == MSG_SCORE){
+            ScorePacket pkt;
+            if (!recv_scorepacket(sockfd, pkt)) break;
+            for (const auto& p : pkt.score) {
+                    std::cout << p.first << " : " << p.second << std::endl;
+                }
         } else if (msg_type == MSG_ERASE_ALL) {
-            qDebug() << "Received rease\n";
             if (g_thirdWindow && g_thirdWindow->drawingWidget) {
                     QMetaObject::invokeMethod(
                         g_thirdWindow->drawingWidget,
@@ -285,13 +293,11 @@ void send_answer(const std::string& ans){
 void send_erase(){
     EraseAllPacket erase_pkt;
     erase_pkt.type = MSG_ERASE_ALL;
-    qDebug()<<"send erase!!";
     send(sockfd, &erase_pkt, sizeof(erase_pkt), 0);
 }
 
 void run_client(int maxPlayer) {
     if (sockfd > 0) {
-            //qDebug()  << "Already connected!";
             return;
         }
     desiredMaxPlayer = maxPlayer;

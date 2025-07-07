@@ -203,6 +203,6 @@ void ThirdWindow::updateCountdown()
     {
         m_count--;
         ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-        qDebug() << "m_count:" << m_count;
+        //qDebug() << "m_count:" << m_count;
     }
 }
