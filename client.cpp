@@ -17,7 +17,6 @@
 #include "touchdrawingwidget.h"
 #include "playercountdispatcher.h"
 #include "chatmessagedispatcher.h"
-#include "playbgm.h"
 
 int sockfd = -1;
 int my_Num = 0;
@@ -173,7 +172,8 @@ void recv_thread(int sockfd) {
             if (!recv_commonpacket(sockfd, pkt)) break;
             qDebug()<<"got correct";
             // Play sound correct
-            PlayBgm::playOnce("correct.wav");
+            PlayBgm::stopPlay(PlayBgm::TIMER);
+            PlayBgm::playOnce(PlayBgm::CORRECT);
 
             std::cout << "[Correct] " << pkt.nickname << "Player Correct!\n";
             QString qmsg = QString("[Correct] %1's Answer : %2").arg(QString::fromStdString(pkt.nickname)).arg(QString::fromStdString(pkt.message));
@@ -198,7 +198,7 @@ void recv_thread(int sockfd) {
             if (!recv_commonpacket(sockfd, pkt)) break;
             qDebug()<<"got wrong";
             // Play sound wrong
-            PlayBgm::playOnce("wrong.wav");
+            PlayBgm::playOnce(PlayBgm::WRONG);
 
             std::cout << "[Wrong] " << pkt.message << std::endl;
             std::cout << pkt.message << std::endl;

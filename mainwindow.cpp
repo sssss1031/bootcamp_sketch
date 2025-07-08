@@ -33,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    bgm->startLoop("/mnt/nfs/bgm.wav", "hw:3,0");
 //    SoundExecutor::playOnLoop("bgm.wav");
 
-//    PlayBgm::playOnLoop("bgm.wav");
+    PlayBgm::playOnLoop(PlayBgm::BGM);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

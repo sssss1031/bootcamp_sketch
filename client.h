@@ -7,6 +7,7 @@
 #include "thirdwindow.h"
 #include "drawingdispatcher.h"
 #include "mainwindow.h"
+#include "playbgm.h"
 
 void run_client(int maxPlayer);
 extern void disconnect_client();

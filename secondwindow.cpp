@@ -400,11 +400,17 @@ void SecondWindow::updateTime()
         }
         if (ElapsedTime <= QTime(0,0,10))
         {
+            if (ElapsedTime == QTime(0, 0, 10))
+            {
+                PlayBgm::playOnce(PlayBgm::TIMER);
+            }
+
             if(!m_blinkStarted)
             {
                 m_blinkStarted = true;
                 handle_device_control_request(LED_TIMER);
             }
+
             if(!blink_timer){
                 // blink timer
                 blink_timer = new QTimer(this);
