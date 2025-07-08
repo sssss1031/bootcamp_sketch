@@ -17,7 +17,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
     m_count(8),
-    m_blinkStarted(false) //timer led blink
+    m_blinkStarted(false), //timer led blink
     onBlink(false) // screen timer blink
 {
     ui->setupUi(this);

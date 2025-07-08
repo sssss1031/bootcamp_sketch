@@ -31,11 +31,8 @@ private:
 
     QTime ElapsedTime;
     int m_count;
-<<<<<<< HEAD
     bool m_blinkStarted;
-=======
     int dotCount;
->>>>>>> 36760ad20a0c7687ad95d761da599236d5283b70
     QTimer *timer;
     QTimer *count_timer;
     QTimer *waiting_timer;
@@ -63,11 +60,8 @@ private slots:
 public slots:
     void updateScoreboard(const ScoreList& players);
     void onBeginRound();
-<<<<<<< HEAD
-=======
     void setMyNum(int num);
     void showTimeOverAnswer(const QString& answer);
->>>>>>> 36760ad20a0c7687ad95d761da599236d5283b70
 };
 
 #endif // THIRDWINDOW_H
