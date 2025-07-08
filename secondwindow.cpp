@@ -175,6 +175,8 @@ void SecondWindow::setMyNum(int num) {
 void SecondWindow::showEvent(QShowEvent* event) {
     QMainWindow::showEvent(event);
 
+    updateScoreboard(g_pendingScoreList);
+
     QTimer::singleShot(0, this, [this]() {
             bool ok = false;
             QString word;
@@ -285,7 +287,7 @@ void SecondWindow::nextRound(int correct_num)
 
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == retMyNum()) { g_thirdWindow->hide(); this->show(); }
+    if (correct_num == retMyNum()) { this->hide(); this->show(); }
     else { this->hide(); g_thirdWindow->show(); }
 }
 
@@ -355,6 +357,7 @@ void SecondWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+        qDebug() << "secondWindow address:" << this;
         if (ElapsedTime < QTime(0,0,31))
         {
             ui->timelabel->setStyleSheet("color: red;");

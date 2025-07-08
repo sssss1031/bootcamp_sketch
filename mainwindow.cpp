@@ -90,42 +90,44 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
     if (rx.indexIn(nickname) != -1) {
         selectedNum = rx.cap(1).toInt();
     }
+    if (!secondWindow) {
+        secondWindow = new SecondWindow(serverMaxPlayer); // maxPlayer로 생성
+        connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
+            this->show();
+            isInWaitingState = false;
+            ui->label_playerCount->setText("");
+            secondWindow->deleteLater();
+            if (secondWindow) {
+                secondWindow = nullptr;
+                g_secondWindow = nullptr;
+            }
+        });
+        g_secondWindow = secondWindow;
+        secondWindow->setMyNum(my_Num);
+    }
+    // ThirdWindow 띄우기
+    if (!thirdWindow) {
+        thirdWindow = new ThirdWindow(serverMaxPlayer);
+        connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
+            this->show();
+            isInWaitingState = false;
+            ui->label_playerCount->setText("");
+            thirdWindow->deleteLater();
+            if (thirdWindow) {
+                thirdWindow = nullptr;
+                g_thirdWindow = nullptr;
+            }
+        });
+        g_thirdWindow = thirdWindow;
+    }
     // 내 번호와 비교
     if (selectedNum == my_Num) {
         // SecondWindow 띄우기
-        if (!secondWindow) {
-            secondWindow = new SecondWindow(serverMaxPlayer); // maxPlayer로 생성
-            connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
-                this->show();
-                isInWaitingState = false;
-                ui->label_playerCount->setText("");
-                secondWindow->deleteLater();
-                if (secondWindow) {
-                    secondWindow = nullptr;
-                    g_secondWindow = nullptr;
-                }
-            });
-            g_secondWindow = secondWindow;
-            secondWindow->setMyNum(my_Num);
-        }
+
         secondWindow->show();
         this->hide();
     } else {
-        // ThirdWindow 띄우기
-        if (!thirdWindow) {
-            thirdWindow = new ThirdWindow(serverMaxPlayer);
-            connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
-                this->show();
-                isInWaitingState = false;
-                ui->label_playerCount->setText("");
-                thirdWindow->deleteLater();
-                if (thirdWindow) {
-                    thirdWindow = nullptr;
-                    g_thirdWindow = nullptr;
-                }
-            });
-            g_thirdWindow = thirdWindow;
-        }
+
         thirdWindow->show();
         this->hide();
     }
