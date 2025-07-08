@@ -179,8 +179,8 @@ void SecondWindow::setMyNum(int num) {
 //입력창 띄우기
 void SecondWindow::showEvent(QShowEvent* event) {
     QMainWindow::showEvent(event);
-
-    qDebug()<<"second showevent";
+    drawingWidget->erase();
+    drawingWidget->reset();
     updateScoreboard(g_pendingScoreList);
 
     QTimer::singleShot(0, this, [this]() {
@@ -192,7 +192,7 @@ void SecondWindow::showEvent(QShowEvent* event) {
                 inputDialog.setWindowTitle("INPUT Value");
                 inputDialog.setLabelText("Input The Word to Draw:");
                 inputDialog.setInputMode(QInputDialog::TextInput);
-                inputDialog.setTextValue("Nothin");
+                inputDialog.setTextValue("Nothing");
                 inputDialog.resize(400, 400);
 
                 // 폰트 크기, 색상 등 전체 적용
@@ -227,6 +227,15 @@ void SecondWindow::appendChatMessage(const QString& message) {
 void SecondWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
 
+
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
+
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
 
@@ -254,6 +263,13 @@ void SecondWindow::correctRound(const QString& message){
 void SecondWindow::showTimeOverAnswer(const QString& answer) {
     // 기존 timeoverRound에서 정답을 받아 표시하도록 수정
     qDebug() << "Time over, 정답:" << answer;
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
     drawingWidget->setEnabled(false);
 
     ui->timeover->setStyleSheet(R"(
@@ -420,6 +436,7 @@ void SecondWindow::updateTime()
             if (!timer->isActive())
             {
                 if(blink_timer){
+
                     blink_timer->stop();
                     blink_timer->deleteLater();
                     blink_timer = nullptr;

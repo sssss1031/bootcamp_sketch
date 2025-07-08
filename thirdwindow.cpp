@@ -130,8 +130,9 @@ void ThirdWindow::onLineEditReturnPressed()
 
 void ThirdWindow::showEvent(QShowEvent *event)
 {
-    qDebug()<<"third showevent";
     QMainWindow::showEvent(event);
+    drawingWidget->erase();
+    drawingWidget->reset();
     QTimer::singleShot(0, this, [this]() {
             ui->waiting->show();
             updateScoreboard(g_pendingScoreList);
@@ -156,6 +157,13 @@ void ThirdWindow::appendChatMessage(const QString& message) {
 void ThirdWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
 
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
     // CORRECT : change questioner
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
@@ -215,6 +223,13 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
 
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
     ui->timeover->setStyleSheet(R"(
             QLabel {
                 color: #fff;
@@ -313,6 +328,7 @@ void ThirdWindow::updateTime()
             if (!timer->isActive())
             {
                 if(blink_timer){
+
                     blink_timer->stop();
                     blink_timer->deleteLater();
                     blink_timer = nullptr;
@@ -323,6 +339,7 @@ void ThirdWindow::updateTime()
         //qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
+
         blink_timer->stop();
         blink_timer->deleteLater();
         blink_timer = nullptr;
