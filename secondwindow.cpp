@@ -15,8 +15,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
-    m_count(8)
-
+    m_count(8),
+    onBlink(false)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -104,6 +104,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
+
+    // blink timer
+    blink_timer = nullptr;
 
     qDebug() << "second";
 
@@ -357,15 +360,50 @@ void SecondWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
-        qDebug() << "secondWindow address:" << this;
         if (ElapsedTime < QTime(0,0,31))
         {
             ui->timelabel->setStyleSheet("color: red;");
         }
+        if (ElapsedTime <= QTime(0,0,10))
+        {
+            if(!blink_timer){
+                // blink timer
+                blink_timer = new QTimer(this);
+                connect(blink_timer, &QTimer::timeout, this, &SecondWindow::updateBlink);
+                blink_timer->start(250);
+            }
+        }
+        if (!timer->isActive())
+        {
+            if(blink_timer){
+                blink_timer->stop();
+                blink_timer->deleteLater();
+                blink_timer = nullptr;
+                ui->timelabel->setStyleSheet("color: red;");
+            }
+        }
         qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+
         timeoverRound();
+    }
+}
+
+void SecondWindow::updateBlink()
+{
+    onBlink = !onBlink;
+    if (onBlink)
+    {
+        ui->timelabel->setStyleSheet("color: red;");
+    }
+    else
+    {
+        ui->timelabel->setStyleSheet("color: transparent;");
     }
 }
 

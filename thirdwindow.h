@@ -31,10 +31,14 @@ private:
 
     QTime ElapsedTime;
     int m_count;
+    int dotCount;
     QTimer *timer;
     QTimer *count_timer;
-    bool round_start = false;
+    QTimer *waiting_timer;
+    QTimer *blink_timer;
 
+    bool round_start;
+    bool onBlink;
     void timeoverRound();
     void nextRound(int correct_num);
 
@@ -49,6 +53,8 @@ private slots:
     void correctRound(const QString &message);
     void updateTime();
     void updateCountdown();
+    void updateWaiting();
+    void updateBlink();
 
 public slots:
     void updateScoreboard(const ScoreList& players);
