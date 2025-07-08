@@ -10,6 +10,9 @@
 #include "scorelist.h"
 
 #define TIME_OVER 9999
+#define BACKTOMAIN 10000
+#define MAX_ROUND 4
+
 namespace Ui {
 class ThirdWindow;
 }
@@ -21,6 +24,7 @@ class ThirdWindow : public QMainWindow
 public:
     explicit ThirdWindow(int maxPlayer = 2, QWidget *parent = nullptr);
     TouchDrawingWidget *drawingWidget;
+    void roundinc();
     ~ThirdWindow();
 
 
@@ -42,6 +46,7 @@ private:
     QFrame* hintFrame;
     QLabel* hintLabel;
     QLabel* touchLabel;
+    int current_round;
 
     bool round_start;
     bool onBlink;
@@ -52,6 +57,7 @@ private:
     QString m_answerStr;
     void showHint(const QString& answer);
     void hideHint();
+    void showResult();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -71,6 +77,7 @@ private slots:
 public slots:
     void updateScoreboard(const ScoreList& players);
     void onBeginRound(const QString& answer);
+    void updateResultboard(const ScoreList& players);
     void setMyNum(int num);
     void showTimeOverAnswer(const QString& answer);
 };

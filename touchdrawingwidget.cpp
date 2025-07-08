@@ -2,6 +2,8 @@
 #include "client.h"
 #include <QTouchEvent>
 #include <QPainter>
+#include <QPixmap>
+#include <QTransform>
 #include <QDebug>
 
 TouchDrawingWidget::TouchDrawingWidget(QWidget *parent)
@@ -24,6 +26,7 @@ void TouchDrawingWidget::resizeEvent(QResizeEvent *event)
         painter.drawImage(0, 0, canvas);
         canvas = newImage;
     }
+
     QWidget::resizeEvent(event);
 }
 
