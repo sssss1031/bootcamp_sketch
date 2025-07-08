@@ -31,7 +31,6 @@ bool TouchDrawingWidget::event(QEvent *event)
 {
     if (!isEnabled()) {
             // 비활성화 상태면 입력 무시
-            qDebug()<<"touchDrawing not enabled";
             return QWidget::event(event);
 
         }
@@ -75,6 +74,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                                 case GREEN: color = Qt::green; break;
                                                 case BLUE: color = Qt::blue; break;
                                                 case WHITE: color = Qt::white; break;
+                                                case ERASER: color = Qt::white; break;
                                             }
 
                                             int width;
@@ -138,7 +138,7 @@ void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int co
                     case GREEN: qcolor = Qt::green; break;
                     case BLUE: qcolor = Qt::blue; break;
                     case WHITE: qcolor = Qt::white; break;
-                    case ERASER: color = Qt::white; break;
+                    case ERASER: qcolor = Qt::white; break;
                 }
                 int width = 3;
                 switch(penWidth) {

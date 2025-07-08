@@ -78,6 +78,7 @@ struct SelectedPlayerPacket {
 
 struct SendTypePacket {
     int type;
+    std::string str;
 };
 
 struct ScorePacket {
@@ -88,6 +89,7 @@ struct ScorePacket {
 struct TimeOverPacket {
     int type;
     std::string answer; // 정답 추가
+    std::string nickname;
 };
 
 #endif

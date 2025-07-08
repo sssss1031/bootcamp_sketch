@@ -159,7 +159,6 @@ void recv_thread(int sockfd) {
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
-            qDebug()<<"got draw";
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -170,7 +169,6 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_CORRECT) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
-            qDebug()<<"got correct";
             // Play sound correct
             PlayBgm::stopPlay(PlayBgm::TIMER);
             PlayBgm::playOnce(PlayBgm::CORRECT);
@@ -196,7 +194,6 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
-            qDebug()<<"got wrong";
             // Play sound wrong
             PlayBgm::playOnce(PlayBgm::WRONG);
 
@@ -287,7 +284,6 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_SCORE){
             ScorePacket pkt;
             if (!recv_scorepacket(sockfd, pkt)) break;
-            qDebug()<<"got score";
             std::vector<std::pair<QString, int>> scores;
             for (const auto& p : pkt.score)
                {scores.push_back({QString::fromStdString(p.first), p.second});}
@@ -311,22 +307,25 @@ void recv_thread(int sockfd) {
             }
 
         } else if (msg_type == MSG_ERASE_ALL) {
-            qDebug()<<"got eraseall";
             if (g_thirdWindow && g_thirdWindow->drawingWidget) {
-                    QMetaObject::invokeMethod(
-                        g_thirdWindow->drawingWidget,
-                        "erase",
-                        Qt::QueuedConnection
-                    );
+                     QMetaObject::invokeMethod(
+                     g_thirdWindow->drawingWidget,
+                     "erase",
+                     Qt::QueuedConnection
+                     );
             }
         } else if (msg_type == MSG_SET_TRUE_ANSWER){
-            qDebug()<<"receive answer";
-            QMetaObject::invokeMethod(
-                g_thirdWindow,
-                "onBeginRound",
-                Qt::QueuedConnection);
-        }else if (msg_type == MSG_TIME_OVER) {
-            qDebug()<<"got timeover";
+            qDebug()<<"receive true answer";
+            std::string received_ans = recv_string(sockfd);
+            std::cout<<received_ans<<endl;
+                QMetaObject::invokeMethod(
+                    g_thirdWindow,
+                    "onBeginRound",
+                    Qt::QueuedConnection,
+                    Q_ARG(QString, QString::fromStdString(received_ans))
+                );
+
+        } else if (msg_type == MSG_TIME_OVER) {
             // 서버로부터 정답 문자열 받기
             std::string answer = recv_string(sockfd);
 
@@ -360,7 +359,6 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
     DrawPacket pkt{};
     pkt.type = MSG_DRAW;
     pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
-    qDebug()<<"send coord";
     send_drawpacket(sockfd, pkt);
 }
 
@@ -380,8 +378,11 @@ void send_erase(){
 }
 
 void send_timeover() {
-    int type = MSG_TIME_OVER;
-    send(sockfd, &type, sizeof(type), 0);
+    TimeOverPacket timeover_pkt;
+    timeover_pkt.type = MSG_TIME_OVER;
+    timeover_pkt.nickname = "player" + std::to_string(my_Num);
+    send(sockfd, &timeover_pkt.type, sizeof(timeover_pkt.type), 0);
+    send_string(sockfd, timeover_pkt.nickname);
 }
 
 void run_client(int maxPlayer) {

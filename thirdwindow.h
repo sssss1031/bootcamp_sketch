@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QTime>
 #include <QTimer>
+#include <QLabel>
+#include <QFrame>
 #include "touchdrawingwidget.h"
 #include "scorelist.h"
 
@@ -37,15 +39,24 @@ private:
     QTimer *count_timer;
     QTimer *waiting_timer;
     QTimer *blink_timer;
+    QFrame* hintFrame;
+    QLabel* hintLabel;
+    QLabel* touchLabel;
 
     bool round_start;
     bool onBlink;
     void timeoverRound();
     void nextRound(int correct_num);
+    QString makeHint(const QString& answer) const;
+
+    QString m_answerStr;
+    void showHint(const QString& answer);
+    void hideHint();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent* event) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
     void onLineEditReturnPressed();
@@ -59,7 +70,7 @@ private slots:
 
 public slots:
     void updateScoreboard(const ScoreList& players);
-    void onBeginRound();
+    void onBeginRound(const QString& answer);
     void setMyNum(int num);
     void showTimeOverAnswer(const QString& answer);
 };

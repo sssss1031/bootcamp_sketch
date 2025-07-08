@@ -18,7 +18,10 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     m_blinkStarted (false), // led timer blink
     dotCount(0),
     round_start(false),
-    onBlink(false) // screen timer blink
+    onBlink(false), // screen timer blink
+    hintFrame(nullptr),
+    hintLabel(nullptr),
+    touchLabel(nullptr)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -30,6 +33,17 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setEnabled(false);
     ui->countdown->hide();
     ui->waiting->raise();
+
+    hintFrame = ui->hintFrame;
+    hintLabel = ui->hintLabel;
+    touchLabel = ui->touchLabel;
+    hintFrame->setVisible(false);
+    hintLabel->setVisible(false);
+    touchLabel->setVisible(true);
+
+    ui->hintFrame->installEventFilter(this);
+    //ui->hintLabel->installEventFilter(this);
+    //ui->touchLabel->installEventFilter(this);
 
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &ThirdWindow::backToMainRequested);
@@ -130,21 +144,88 @@ void ThirdWindow::onLineEditReturnPressed()
 
 void ThirdWindow::showEvent(QShowEvent *event)
 {
-    qDebug()<<"third showevent";
     QMainWindow::showEvent(event);
+    drawingWidget->erase();
+    drawingWidget->reset();
     QTimer::singleShot(0, this, [this]() {
             ui->waiting->show();
             updateScoreboard(g_pendingScoreList);
     });
 }
 
+QString ThirdWindow::makeHint(const QString& answer) const {
+    if (answer.isEmpty()) return "";
+    QString hint = answer.left(1);
+    for (int i = 1; i < answer.size(); ++i)
+        hint += " _";
+    return hint;
+}
 
-void ThirdWindow::onBeginRound()
+void ThirdWindow::showHint(const QString& answer)
+{
+    QString hint = makeHint(answer);
+    hintLabel->setText(hint);
+    hintLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+    QFontMetrics fm(hintLabel->font());
+    int textWidth = fm.horizontalAdvance(hint);
+    int frameWidth = textWidth + 40;
+    int frameHeight = fm.height() + 20;
+    QRect origGeo = hintFrame->geometry();
+    int x = origGeo.x();
+    int y = origGeo.y();
+
+    hintLabel->setMinimumWidth(frameWidth);
+    hintLabel->setMinimumHeight(frameHeight);
+    hintFrame->raise();
+
+    hintLabel->setVisible(true);
+    touchLabel->setVisible(false);
+    hintFrame->setVisible(true);
+}
+
+bool ThirdWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (obj == ui->hintFrame || obj == ui->hintLabel || obj == ui->touchLabel) {
+           if (ElapsedTime > QTime(0,0,10)) {
+               if (event->type() == QEvent::MouseButtonPress) {
+                   showHint(m_answerStr);
+                   return true;
+               }
+               if (event->type() == QEvent::MouseButtonRelease) {
+                    hideHint();
+                    return true;
+               }
+           } else {
+                    showHint(m_answerStr);
+                    return true;
+               }
+          }
+   return QMainWindow::eventFilter(obj, event);
+}
+
+void ThirdWindow::hideHint()
+{
+    if (ElapsedTime <= QTime(0,0,10)) return;
+    hintLabel->setVisible(false);
+    touchLabel->setVisible(true);
+    hintFrame->setVisible(true);
+}
+
+void ThirdWindow::onBeginRound(const QString& answer)
 {
     round_start = true;
     ui->waiting->hide();
     qDebug()<<"onBeginRound";
     timer->start(1000);
+
+    m_answerStr = answer;
+
+    if (ElapsedTime <= QTime(0,0,10)) {
+       showHint(m_answerStr);
+    } else {
+       hideHint();
+    }
 }
 
 //메시지 채팅
@@ -156,6 +237,13 @@ void ThirdWindow::appendChatMessage(const QString& message) {
 void ThirdWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
 
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
     // CORRECT : change questioner
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
@@ -215,6 +303,13 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
 
+    if(blink_timer){
+
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+    }
     ui->timeover->setStyleSheet(R"(
             QLabel {
                 color: #fff;
@@ -296,6 +391,7 @@ void ThirdWindow::updateTime()
             if (ElapsedTime == QTime(0, 0, 10))
             {
                 PlayBgm::playOnce(PlayBgm::TIMER);
+                showHint(m_answerStr);
             }
 
             if(!m_blinkStarted)
@@ -313,6 +409,7 @@ void ThirdWindow::updateTime()
             if (!timer->isActive())
             {
                 if(blink_timer){
+
                     blink_timer->stop();
                     blink_timer->deleteLater();
                     blink_timer = nullptr;
@@ -323,6 +420,7 @@ void ThirdWindow::updateTime()
         //qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
+
         blink_timer->stop();
         blink_timer->deleteLater();
         blink_timer = nullptr;
