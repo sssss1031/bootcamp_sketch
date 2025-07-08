@@ -26,7 +26,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     // QFrame에 TouchDrawingWidget 생성 및 배치
     drawingWidget = new TouchDrawingWidget(ui->frame);
-    drawingWidget->setGeometry(ui->frame->rect());
+    //drawingWidget->setGeometry(ui->frame->rect());
     drawingWidget->show();
     drawingWidget->setEnabled(true);
 
@@ -43,6 +43,20 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     connect(&ChatMessageDispatcher::instance(), &ChatMessageDispatcher::chatMessageArrived,
             this, &SecondWindow::appendChatMessage);
+
+    ui->countdown->setStyleSheet(R"(
+            QLabel {
+                color: #333366;
+                background: rgba(255,255,255,0.85);
+                border: 2px solid #77aaff;
+                border-radius: 20px;
+                padding: 20px 40px;
+                font-size: 32px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                qproperty-alignment: AlignCenter;
+            }
+        )");
 
     // button monitoring
     auto *btnMon = new ButtonMonitor("/dev/mydev", this);
@@ -118,6 +132,24 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     qDebug() << "second";
 
+    ui->correct->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+           background: qlineargradient(
+                       x1:0, y1:0, x2:1, y2:1,
+                       stop:0 rgba(79,214,114,0.85),   /* #4fd672 with alpha */
+                       stop:1 rgba(34,153,119,0.85)    /* #229977 with alpha */
+                   );
+            border: 5px solid #3fa65b;
+            border-radius: 36px;
+            padding: 48px;
+            font-size: 40px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.4);
+        }ui->correct
+    )");
+
 }
 
 SecondWindow::~SecondWindow()
@@ -133,7 +165,10 @@ void SecondWindow::backToMainRequested() {
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
 void SecondWindow::resizeEvent(QResizeEvent *event)
 {
-    // 배경이미지 설정
+    drawingWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+    drawingWidget->setStyleSheet("background: transparent; border: none;");
+
+    // 배경이미지 설정 (기존 코드 유지)
     QPixmap bkgnd(":/new/prefix1/background2_gpt.png");
     if (bkgnd.isNull()) {
         qDebug() << "Can not load Image";
@@ -143,9 +178,24 @@ void SecondWindow::resizeEvent(QResizeEvent *event)
         palette.setBrush(QPalette::Window, bkgnd);
         this->setPalette(palette);
     }
+
     QMainWindow::resizeEvent(event);
+
     if (ui->frame && drawingWidget) {
-        drawingWidget->setGeometry(ui->frame->rect());
+
+        // 2. frame 영역에서 border만큼 안쪽에 위치하도록 사각형 생성
+        QRect boardRect = ui->frame->rect();
+        // 원하는 비율 (예: 가로 90%, 세로 60%)
+        double widthRatio = 0.94;
+        double heightRatio = 0.90;
+
+        int newWidth = static_cast<int>(boardRect.width() * widthRatio);
+        int newHeight = static_cast<int>(boardRect.height() * heightRatio);
+
+        int newX = (boardRect.width() - newWidth) / 2;
+        int newY = (boardRect.height() - newHeight) / 2;
+
+        drawingWidget->setGeometry(newX, newY, newWidth, newHeight);
     }
 }
 
@@ -225,16 +275,45 @@ void SecondWindow::showEvent(QShowEvent* event) {
                 inputDialog.setLabelText("Input The Word to Draw:");
                 inputDialog.setInputMode(QInputDialog::TextInput);
                 inputDialog.setTextValue("Nothing");
-                inputDialog.resize(400, 400);
-
+                inputDialog.resize(460, 420);
+                inputDialog.move(240, 200);
+                
                 // 폰트 크기, 색상 등 전체 적용
                 inputDialog.setStyleSheet(R"(
-                    * { font-size: 30px; }
-                    QLabel { color: #333366; font-weight: bold; }
-                    QLineEdit { background: #f3f3fa; border: 2px solid #888; }
-                    QPushButton { background: #77aaff; color: white; font-size: 36px; border-radius: 10px; min-width: 80px; min-height: 40px; }
+                    QDialog {
+                        background: rgba(255,255,255,0.85);
+                        border: 4px solid #9ec9ff;
+                        border-radius: 22px;
+                    }
+                    * { font-size: 24px; font-family: 'Segoe UI', 'Pretendard', 'Noto Sans KR', sans-serif; }
+                    QLabel {
+                        color: #224488;
+                        font-weight: 600;
+                        padding-bottom: 10px;
+                    }
+                    QLineEdit {
+                        background: #fff;
+                        border: 2px solid #aac9e6;
+                        border-radius: 10px;
+                        padding: 10px 16px;
+                        font-size: 26px;
+                        color: #223355;
+                    }
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #6db3fa, stop:1 #1e69de);
+                        color: white;
+                        font-size: 24px;
+                        border-radius: 14px;
+                        min-width: 90px;
+                        min-height: 44px;
+                        font-weight: bold;
+                        padding: 8px 28px;
+                        margin: 8px 16px 0 0;
+                    }
+                    QPushButton:pressed {
+                        background: #184c99;
+                    }
                 )");
-
                 if (inputDialog.exec() == QDialog::Accepted) {
                     word = inputDialog.textValue();
                     ok = true;
@@ -274,6 +353,10 @@ void SecondWindow::correctRound(const QString& message){
 
     ui->correct->setText("correct! : Player " + QString::number(correct_num) + "\nANSWER : " +
                          message.mid(colon + 1).trimmed());
+
+    ui->correct->resize(590, 280);
+    ui->correct->move(140, 50);
+
     ui->correct->raise();
     ui->correct->show();
     timer->stop();
@@ -320,38 +403,30 @@ void SecondWindow::showTimeOverAnswer(const QString& answer) {
     }
     drawingWidget->setEnabled(false);
 
-    ui->timeover->setStyleSheet(R"(
-            QLabel {
-                color: #fff;
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
-                border: 3px solid #fff;
-                border-radius: 30px;
-                padding: 30px;
-                font-size: 32px;
-                font-weight: bold;
-                qproperty-alignment: AlignCenter;
-            }
-            )");
+    ui->timeover->resize(590, 280);
+    ui->timeover->move(170, 50);
 
-    ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
+    ui->timeover->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 95, 109, 0.7),  stop:1 rgba(255, 195, 113, 0.7) );
+            border: 6px solid #444;
+            border-radius: 36px;
+            padding: 48px;
+            font-size: 48px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+        }
+        )");
+
+            ui->timeover->setText(
+                QString("<span style='font-size:48px;'>Time Over!</span><br>"
+                        "<span style='font-size:36px;'>Answer is.. <b>%1</b></span>")
+                        .arg(answer)
+            ); // 정답 표시
     ui->timeover->raise();
     ui->timeover->show();
     timer->stop();
-
-    // 스타일 적용
-    ui->countdown->setStyleSheet(R"(
-        QLabel {
-            color: #333366;
-            background: rgba(255,255,255,0.85);
-            border: 2px solid #77aaff;
-            border-radius: 20px;
-            padding: 20px 40px;
-            font-size: 30px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            qproperty-alignment: AlignCenter;
-        }
-    )");
 
     count_timer->start(1000);
     if (current_round == MAX_ROUND) {

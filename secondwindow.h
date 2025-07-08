@@ -47,8 +47,8 @@ private:
     void nextRound(int correct_num);
     void showResult();
 
-    const int originX = 110;
-    const int originY = 20;
+    const int originX = 120;
+    const int originY = 40;
     const int originW = 61;
     const int originH = 61;
     const int centerX = originX + originW / 2;

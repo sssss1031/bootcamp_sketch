@@ -32,6 +32,39 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     ui->countdown->hide();
     ui->waiting->raise();
 
+
+    ui->waiting->move(70, 220);
+    ui->waiting->resize(871, 200);
+
+    ui->waiting->setStyleSheet(R"(
+        QLabel {
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                                       stop:0 #c9e7ff, stop:1 #e0ecff);
+            color: #223366;
+            border: 4px solid #7dcfff;
+            border-radius: 32px;
+            padding: 24px 40px;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background-color: rgba(255,255,255,0.92);
+        }
+    )");
+
+    ui->countdown->setStyleSheet(R"(
+            QLabel {
+                color: #333366;
+                background: rgba(255,255,255,0.85);
+                border: 2px solid #77aaff;
+                border-radius: 20px;
+                padding: 20px 40px;
+                font-size: 32px;
+                font-weight: 600;
+                letter-spacing: 2px;
+                qproperty-alignment: AlignCenter;
+            }
+        )");
+
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &ThirdWindow::backToMainRequested);
 
@@ -92,6 +125,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
     qDebug() << "third";
+
 }
 
 ThirdWindow::~ThirdWindow()
@@ -107,6 +141,9 @@ void ThirdWindow::backToMainRequested() {
 // 리사이즈 이벤트에서 drawingWidget 크기 자동조정
 void ThirdWindow::resizeEvent(QResizeEvent *event)
 {
+    drawingWidget->setAttribute(Qt::WA_TranslucentBackground, true);
+    drawingWidget->setStyleSheet("background: transparent; border: none;");
+
     // 배경이미지 설정
     QPixmap bkgnd(":/new/prefix1/background2_gpt.png");
     if (bkgnd.isNull()) {
@@ -118,8 +155,20 @@ void ThirdWindow::resizeEvent(QResizeEvent *event)
         this->setPalette(palette);
     }
     QMainWindow::resizeEvent(event);
+
     if (ui->frame && drawingWidget) {
-        drawingWidget->setGeometry(ui->frame->rect());
+
+        QRect boardRect = ui->frame->rect();
+        double widthRatio = 0.94;
+        double heightRatio = 0.90;
+
+        int newWidth = static_cast<int>(boardRect.width() * widthRatio);
+        int newHeight = static_cast<int>(boardRect.height() * heightRatio);
+
+        int newX = (boardRect.width() - newWidth) / 2;
+        int newY = (boardRect.height() - newHeight) / 2;
+
+        drawingWidget->setGeometry(newX, newY, newWidth, newHeight);
     }
 }
 
@@ -142,6 +191,7 @@ void ThirdWindow::showEvent(QShowEvent *event)
     drawingWidget->erase();
     drawingWidget->reset();
     QTimer::singleShot(0, this, [this]() {
+
             ui->waiting->show();
             updateScoreboard(g_pendingScoreList);
     });
@@ -176,7 +226,28 @@ void ThirdWindow::correctRound(const QString& message){
     int correct_num = message.mid(16,1).toInt();
     int colon = message.indexOf(':');
 
-    ui->correct->setText("correct! : Player " + QString::number(correct_num) + "\nANSWER : " +
+    ui->correct->resize(590, 280);
+    ui->correct->move(140, 50);
+
+    ui->correct->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+           background: qlineargradient(
+                       x1:0, y1:0, x2:1, y2:1,
+                       stop:0 rgba(79,214,114,0.85),   /* #4fd672 with alpha */
+                       stop:1 rgba(34,153,119,0.85)    /* #229977 with alpha */
+                   );
+            border: 5px solid #3fa65b;
+            border-radius: 36px;
+            padding: 48px;
+            font-size: 40px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.4);
+        }ui->correct
+    )");
+
+    ui->correct->setText("Correct! : Player " + QString::number(correct_num) + "\nANSWER : " +
                          message.mid(colon + 1).trimmed());
     ui->correct->raise();
     ui->correct->show();
@@ -270,6 +341,7 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
 
+
     if(blink_timer){
 
         blink_timer->stop();
@@ -277,20 +349,29 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
         blink_timer = nullptr;
         ui->timelabel->setStyleSheet("color: red;");
     }
-    ui->timeover->setStyleSheet(R"(
-            QLabel {
-                color: #fff;
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
-                border: 3px solid #fff;
-                border-radius: 30px;
-                padding: 30px;
-                font-size: 32px;
-                font-weight: bold;
-                qproperty-alignment: AlignCenter;
-            }
-            )");
 
-    ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
+    ui->timeover->resize(590, 270);
+    ui->timeover->move(170, 50);
+
+    ui->timeover->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 rgba(255, 95, 109, 0.7),  stop:1 rgba(255, 195, 113, 0.7) );
+            border: 6px solid #444;
+            border-radius: 36px;
+            padding: 48px;
+            font-size: 48px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+            box-shadow: 0px 8px 24px rgba(0,0,0,0.4);
+        }
+        )");
+
+            ui->timeover->setText(
+                QString("<span style='font-size:48px;'>Time Over!</span><br>"
+                        "<span style='font-size:36px;'>Answer is.. <b>%1</b></span>")
+                        .arg(answer)
+            ); // 정답 표시
     ui->timeover->raise();
     ui->timeover->show();
     timer->stop();
@@ -433,7 +514,7 @@ void ThirdWindow::updateWaiting()
 {
     dotCount = ((dotCount + 1) % 4 );
     QString dots(dotCount, '.');
-    ui->waiting->setText("Your opponent is thinking" + dots);
+    ui->waiting->setText("Drawer is thinking" + dots);
 }
 
 

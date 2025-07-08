@@ -27,7 +27,7 @@
      <string>Home</string>
     </property>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="MyBoardFrame" name="frame">
     <property name="geometry">
      <rect>
       <x>30</x>
@@ -122,15 +122,17 @@ border-style: solid;
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>210</x>
-      <y>30</y>
-      <width>81</width>
+      <x>180</x>
+      <y>20</y>
+      <width>101</width>
       <height>17</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
      </font>
     </property>
     <property name="text">
@@ -220,7 +222,7 @@ border-style:solid;
       <x>80</x>
       <y>470</y>
       <width>861</width>
-      <height>61</height>
+      <height>70</height>
      </rect>
     </property>
     <property name="font">
@@ -411,7 +413,7 @@ border-style: solid;
 }</string>
     </property>
     <property name="text">
-     <string> Your opponent is thinking</string>
+     <string>Drawer is thinking</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -594,6 +596,14 @@ border-style: solid;
    </attribute>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyBoardFrame</class>
+   <extends>QFrame</extends>
+   <header>myboardframe.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

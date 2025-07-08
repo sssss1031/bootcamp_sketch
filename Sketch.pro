@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     gpio_control.cpp \
     buttonmonitor.cpp \
     thirdwindow.cpp \
-    playbgm.cpp
+    playbgm.cpp \
+    myboardframe.cpp
 
 HEADERS  += mainwindow.h \
         secondwindow.h\
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h \
     buttonmonitor.h \
     playbgm.h \
     chatmessagedispatcher.h \
-    scorelist.h
+    scorelist.h \
+    myboardframe.h
 
 FORMS    += mainwindow.ui \
         secondwindow.ui \

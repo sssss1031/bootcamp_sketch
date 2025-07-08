@@ -10,5 +10,6 @@
         <file>white.png</file>
         <file>yellow.png</file>
         <file>eraser.png</file>
+        <file>whiteboard.png</file>
     </qresource>
 </RCC>
