@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "client.h"
 #include "buttonmonitor.h"
+#include "gpio_control.h"
 #include <QDebug>
 #include "chatmessagedispatcher.h"
 
@@ -13,7 +14,8 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     ui(new Ui::ThirdWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
-    m_count(8)
+    m_count(8),
+    m_blinkStarted (false)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -125,18 +127,15 @@ void ThirdWindow::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
 
-    QTimer::singleShot(0, this, [this]() {
-            while (round_start) {
-                timer->start(1000);
-                round_start = false;
-                break;
-            }
-    });
+    updateScoreboard(g_pendingScoreList);
 }
+
 
 void ThirdWindow::onBeginRound()
 {
-    round_start = true;
+    round_start = true;;
+    timer->start(1000);
+
 }
 
 //메시지 채팅
@@ -174,7 +173,6 @@ void ThirdWindow::correctRound(const QString& message){
 void ThirdWindow::updateScoreboard(const ScoreList& players)
 {
 
-    qDebug() << "updateScoreboard called, players:" << players.size();
 
     QLabel* nameLabels[3] = {ui->P1, ui->P2, ui->P3};
     QLabel* scoreLabels[3] = {ui->P1_score, ui->P2_score, ui->P3_score};
@@ -222,6 +220,7 @@ void ThirdWindow::timeoverRound(){
 void ThirdWindow::nextRound(int correct_num)
 {
     // widget
+    m_blinkStarted = false;
     drawingWidget->erase();
     drawingWidget->reset();
 
@@ -237,7 +236,7 @@ void ThirdWindow::nextRound(int correct_num)
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
-    else { g_secondWindow->hide(); this->show(); }
+    else { this->hide(); this->show(); }
 }
 
 void ThirdWindow::updateTime()
@@ -250,7 +249,11 @@ void ThirdWindow::updateTime()
         {
             ui->timelabel->setStyleSheet("color: red;");
         }
-        qDebug() << ElapsedTime.toString("mm:ss");
+        if (ElapsedTime == QTime(0,0,10) && !m_blinkStarted) {
+                    m_blinkStarted = true;
+                    handle_device_control_request(LED_TIMER);
+         }
+        //qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
         timeoverRound();
@@ -264,6 +267,5 @@ void ThirdWindow::updateCountdown()
     {
         m_count--;
         ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-        //qDebug() << "m_count:" << m_count;
     }
 }

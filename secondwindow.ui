@@ -408,155 +408,6 @@ border-style:solid;
      <string>Chat</string>
     </property>
    </widget>
-<<<<<<< HEAD
-   <widget class="QLabel" name="keyword">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>10</y>
-      <width>391</width>
-      <height>81</height>
-=======
-   <widget class="QLabel" name="P1">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>120</y>
-      <width>61</width>
-      <height>16</height>
->>>>>>> d95dbc4ae6759911a7ab48a3d3b7983cb5041fe4
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-<<<<<<< HEAD
-    <property name="styleSheet">
-     <string notr="true">QLabel{
-background-color:white;
-border-color:black;
-border-width:2px;
-border-style:solid;
-}</string>
-    </property>
-    <property name="text">
-     <string/>
-=======
-    <property name="text">
-     <string>1P</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="P2">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>120</y>
-      <width>61</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>2P</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="P3">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>120</y>
-      <width>61</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>3P</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="P1_score">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>145</y>
-      <width>61</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>25</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="P2_score">
-    <property name="geometry">
-     <rect>
-      <x>880</x>
-      <y>145</y>
-      <width>61</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>25</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="P3_score">
-    <property name="geometry">
-     <rect>
-      <x>940</x>
-      <y>145</y>
-      <width>61</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>25</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
->>>>>>> d95dbc4ae6759911a7ab48a3d3b7983cb5041fe4
-    </property>
-   </widget>
    <widget class="QLabel" name="roundboard">
     <property name="geometry">
      <rect>
@@ -725,19 +576,17 @@ border-style:solid;
      </item>
     </layout>
    </widget>
+   <zorder>label_myNum</zorder>
    <zorder>backbutton</zorder>
    <zorder>frame</zorder>
-   <zorder>label</zorder>
    <zorder>textEdit</zorder>
    <zorder>label_2</zorder>
    <zorder>timelabel</zorder>
    <zorder>countdown</zorder>
    <zorder>scoreboard</zorder>
    <zorder>label_3</zorder>
-   <zorder>keyword</zorder>
    <zorder>roundboard</zorder>
    <zorder>label_answer</zorder>
-   <zorder>gridLayoutWidget</zorder>
    <zorder>gridLayoutWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "client.h"
 #include "buttonmonitor.h"
+#include "gpio_control.h"
 #include <QDebug>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -15,7 +16,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
-    m_count(8)
+    m_count(8),
+    m_blinkStarted(false)
 
 {
     ui->setupUi(this);
@@ -175,6 +177,8 @@ void SecondWindow::setMyNum(int num) {
 void SecondWindow::showEvent(QShowEvent* event) {
     QMainWindow::showEvent(event);
 
+    updateScoreboard(g_pendingScoreList);
+
     QTimer::singleShot(0, this, [this]() {
             bool ok = false;
             QString word;
@@ -184,7 +188,7 @@ void SecondWindow::showEvent(QShowEvent* event) {
                 inputDialog.setWindowTitle("INPUT Value");
                 inputDialog.setLabelText("Input The Word to Draw:");
                 inputDialog.setInputMode(QInputDialog::TextInput);
-                inputDialog.setTextValue("Nothing");
+                inputDialog.setTextValue("Nothin");
                 inputDialog.resize(400, 400);
 
                 // 폰트 크기, 색상 등 전체 적용
@@ -267,6 +271,7 @@ void SecondWindow::timeoverRound(){
 
 void SecondWindow::nextRound(int correct_num)
 {
+    m_blinkStarted = false;
     drawingWidget->setEnabled(true); //그림 그려지게 활성화
     // widget
     drawingWidget->erase();
@@ -285,7 +290,7 @@ void SecondWindow::nextRound(int correct_num)
 
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == retMyNum()) { g_thirdWindow->hide(); this->show(); }
+    if (correct_num == retMyNum()) { this->hide(); this->show(); }
     else { this->hide(); g_thirdWindow->show(); }
 }
 
@@ -355,11 +360,16 @@ void SecondWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+        qDebug() << "secondWindow address:" << this;
         if (ElapsedTime < QTime(0,0,31))
         {
             ui->timelabel->setStyleSheet("color: red;");
         }
-        qDebug() << ElapsedTime.toString("mm:ss");
+        if (ElapsedTime == QTime(0,0,10) && !m_blinkStarted) {
+                    m_blinkStarted = true;
+                    handle_device_control_request(LED_TIMER);
+         }
+
     }
     else {
         timeoverRound();
