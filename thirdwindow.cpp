@@ -50,13 +50,6 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     connect(&ChatMessageDispatcher::instance(), &ChatMessageDispatcher::chatMessageArrived,
             this, &ThirdWindow::appendChatMessage);
 
-
-    // button monitoring
-    auto *btnMon = new ButtonMonitor("/dev/mydev", this);
-        connect(btnMon, &ButtonMonitor::buttonPressed, this, [=](int idx){
-            drawingWidget->erase();
-        });
-
     QGridLayout* grid = qobject_cast<QGridLayout*>(ui->scoreboard->layout());
         if (grid) {
             grid->addWidget(ui->P1, 0, 0);
@@ -137,6 +130,7 @@ void ThirdWindow::onLineEditReturnPressed()
 
 void ThirdWindow::showEvent(QShowEvent *event)
 {
+    qDebug()<<"third showevent";
     QMainWindow::showEvent(event);
     QTimer::singleShot(0, this, [this]() {
             ui->waiting->show();
@@ -217,44 +211,23 @@ void ThirdWindow::setMyNum(int num) {
     ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
 }
 
-void ThirdWindow::timeoverRound(){
-    qDebug() << "time over";
-
-    // 스타일 적용
-    ui->timeover->setStyleSheet(R"(
-        QLabel {
-            color: #fff;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
-            border: 3px solid #fff;
-            border-radius: 30px;
-            padding: 30px;
-            font-size: 32px;
-            font-weight: bold;
-            qproperty-alignment: AlignCenter;
-        }
-        )");
-
-    ui->timeover->raise();
-    ui->timeover->show();
-    timer->stop();
-
-
-    count_timer->start(1000);
-    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-    ui->countdown->raise();
-    ui->countdown->show();
-
-    // after 8 secs, next round begins
-    QTimer::singleShot(9000, this, [=](){
-        ui->timeover->hide();
-        ui->countdown->hide();
-        nextRound(TIME_OVER);
-    });
-}
-
 void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
+
+    ui->timeover->setStyleSheet(R"(
+            QLabel {
+                color: #fff;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
+                border: 3px solid #fff;
+                border-radius: 30px;
+                padding: 30px;
+                font-size: 32px;
+                font-weight: bold;
+                qproperty-alignment: AlignCenter;
+            }
+            )");
+
     ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
     ui->timeover->raise();
     ui->timeover->show();
@@ -320,24 +293,25 @@ void ThirdWindow::updateTime()
         }        
         if (ElapsedTime <= QTime(0,0,10))
         {
+            if(!m_blinkStarted)
+            {
+                m_blinkStarted = true;
+                handle_device_control_request(LED_TIMER);
+            }
             if(!blink_timer){
                 // blink timer
                 blink_timer = new QTimer(this);
                 connect(blink_timer, &QTimer::timeout, this, &ThirdWindow::updateBlink);
                 blink_timer->start(250);
             }
-        }
-        if (ElapsedTime == QTime(0,0,10) && !m_blinkStarted) {
-                    m_blinkStarted = true;
-                    handle_device_control_request(LED_TIMER);
-         }
-        if (!timer->isActive())
-        {
-            if(blink_timer){
-                blink_timer->stop();
-                blink_timer->deleteLater();
-                blink_timer = nullptr;
-                ui->timelabel->setStyleSheet("color: red;");
+            if (!timer->isActive())
+            {
+                if(blink_timer){
+                    blink_timer->stop();
+                    blink_timer->deleteLater();
+                    blink_timer = nullptr;
+                    ui->timelabel->setStyleSheet("color: red;");
+                }
             }
         }
         //qDebug() << ElapsedTime.toString("mm:ss");
@@ -347,7 +321,7 @@ void ThirdWindow::updateTime()
         blink_timer->deleteLater();
         blink_timer = nullptr;
         ui->timelabel->setStyleSheet("color: red;");
-        timeoverRound();
+        //timeoverRound();
     }
 }
 

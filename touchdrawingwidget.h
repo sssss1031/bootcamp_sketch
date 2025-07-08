@@ -54,6 +54,7 @@ private:
         SHALLOW=10,
         MIDDLE,
         THICK,
+        MAX
     };
 
 public slots:

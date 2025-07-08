@@ -31,7 +31,9 @@ bool TouchDrawingWidget::event(QEvent *event)
 {
     if (!isEnabled()) {
             // 비활성화 상태면 입력 무시
+            qDebug()<<"touchDrawing not enabled";
             return QWidget::event(event);
+
         }
 
     if (event->type() == QEvent::TouchBegin ||
@@ -80,6 +82,7 @@ bool TouchDrawingWidget::event(QEvent *event)
                                                 case SHALLOW: width = 3; break;
                                                 case MIDDLE: width = 6; break;
                                                 case THICK: width = 9; break;
+                                                case MAX: width = 11; break;
                                             }
 
                                             painter.setPen(QPen(color, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -142,6 +145,7 @@ void TouchDrawingWidget::onDrawPacket(int drawStatus, double x, double y, int co
                       case SHALLOW: width = 3; break;
                       case MIDDLE: width = 6; break;
                       case THICK: width = 9; break;
+                      case MAX: width = 12; break;
                  }
 
                  painter.setPen(QPen(qcolor, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -179,6 +183,7 @@ void TouchDrawingWidget::paintEvent(QPaintEvent *event)
             case SHALLOW: width = 3; break;
             case MIDDLE: width = 6; break;
             case THICK: width = 9; break;
+            case MAX: width = 12; break;
         }
 
         painter.setPen(QPen(color, width, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -264,14 +269,14 @@ void TouchDrawingWidget::setEraser()
 
 void TouchDrawingWidget::widthClicked()
 {
-    if (penWidth==12) { penWidth = 10; }
+    if (penWidth==13) { penWidth = 10; }
     else { penWidth += 1; }
     emit penChanged(penColor, penWidth);
 }
 
 void TouchDrawingWidget::widthUp()
 {
-    if (penWidth==12) return;
+    if (penWidth==13) return;
     else { penWidth += 1; }
     emit penChanged(penColor, penWidth);
 }

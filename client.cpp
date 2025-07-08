@@ -160,6 +160,7 @@ void recv_thread(int sockfd) {
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
             if (!recv_drawpacket(sockfd, pkt)) break;
+            qDebug()<<"got draw";
             QMetaObject::invokeMethod(
                     &DrawingDispatcher::instance(),
                     [pkt](){
@@ -170,7 +171,7 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_CORRECT) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
-
+            qDebug()<<"got correct";
             // Play sound correct
             PlayBgm::playOnce("correct.wav");
 
@@ -195,7 +196,7 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_WRONG) {
             CommonPacket pkt;
             if (!recv_commonpacket(sockfd, pkt)) break;
-
+            qDebug()<<"got wrong";
             // Play sound wrong
             PlayBgm::playOnce("wrong.wav");
 
@@ -229,7 +230,7 @@ void recv_thread(int sockfd) {
                         qDebug() << "invokeMethod setMyNum ok?" << ok;
                     }
 
-            if (g_thirdWindow && g_thirdWindow->isVisible()) {
+            if (g_thirdWindow) {
                 bool ok = QMetaObject::invokeMethod(
                     g_thirdWindow,
                     "setMyNum",
@@ -286,6 +287,7 @@ void recv_thread(int sockfd) {
         } else if (msg_type == MSG_SCORE){
             ScorePacket pkt;
             if (!recv_scorepacket(sockfd, pkt)) break;
+            qDebug()<<"got score";
             std::vector<std::pair<QString, int>> scores;
             for (const auto& p : pkt.score)
                {scores.push_back({QString::fromStdString(p.first), p.second});}
@@ -309,6 +311,7 @@ void recv_thread(int sockfd) {
             }
 
         } else if (msg_type == MSG_ERASE_ALL) {
+            qDebug()<<"got eraseall";
             if (g_thirdWindow && g_thirdWindow->drawingWidget) {
                     QMetaObject::invokeMethod(
                         g_thirdWindow->drawingWidget,
@@ -323,6 +326,7 @@ void recv_thread(int sockfd) {
                 "onBeginRound",
                 Qt::QueuedConnection);
         }else if (msg_type == MSG_TIME_OVER) {
+            qDebug()<<"got timeover";
             // 서버로부터 정답 문자열 받기
             std::string answer = recv_string(sockfd);
 
@@ -356,6 +360,7 @@ void send_coordinate(double x, double y, int penColor, int penWidth, int drawSta
     DrawPacket pkt{};
     pkt.type = MSG_DRAW;
     pkt.x = x; pkt.y = y; pkt.color = penColor; pkt.thick = penWidth; pkt.drawStatus = drawStatus;
+    qDebug()<<"send coord";
     send_drawpacket(sockfd, pkt);
 }
 

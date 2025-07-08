@@ -119,6 +119,7 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
             }
         });
         g_thirdWindow = thirdWindow;
+        thirdWindow->setMyNum(my_Num);
     }
     // 내 번호와 비교
     if (selectedNum == my_Num) {

@@ -60,7 +60,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
                            default : break;
                        };
         });
-    
+
     // pen changed
     connect(drawingWidget, &TouchDrawingWidget::penChanged, this, &SecondWindow::onPenChanged);
     connect(ui->colorbutton, &QPushButton::clicked, this, [this]() {drawingWidget->colorClicked();});
@@ -180,6 +180,7 @@ void SecondWindow::setMyNum(int num) {
 void SecondWindow::showEvent(QShowEvent* event) {
     QMainWindow::showEvent(event);
 
+    qDebug()<<"second showevent";
     updateScoreboard(g_pendingScoreList);
 
     QTimer::singleShot(0, this, [this]() {
@@ -250,48 +251,24 @@ void SecondWindow::correctRound(const QString& message){
 
 }
 
-void SecondWindow::timeoverRound(){
-    qDebug() << "time over";
-
-    drawingWidget->setEnabled(false); //그림 안그려지
-
-    send_timeover();
-
-    // 스타일 적용
-    ui->timeover->setStyleSheet(R"(
-        QLabel {
-            color: #fff;
-            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
-            border: 3px solid #fff;
-            border-radius: 30px;
-            padding: 30px;
-            font-size: 32px;
-            font-weight: bold;
-            qproperty-alignment: AlignCenter;
-        }
-        )");
-
-    ui->timeover->raise();
-    ui->timeover->show();
-    timer->stop();
-
-    count_timer->start(1000);
-    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
-    ui->countdown->raise();
-    ui->countdown->show();
-
-    // after 8 secs, next round begins
-    QTimer::singleShot(9000, this, [=](){
-        ui->timeover->hide();
-        ui->countdown->hide();
-        nextRound(TIME_OVER);
-    });
-}
-
 void SecondWindow::showTimeOverAnswer(const QString& answer) {
     // 기존 timeoverRound에서 정답을 받아 표시하도록 수정
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
+
+    ui->timeover->setStyleSheet(R"(
+            QLabel {
+                color: #fff;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
+                border: 3px solid #fff;
+                border-radius: 30px;
+                padding: 30px;
+                font-size: 32px;
+                font-weight: bold;
+                qproperty-alignment: AlignCenter;
+            }
+            )");
+
     ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
     ui->timeover->raise();
     ui->timeover->show();
@@ -363,14 +340,15 @@ void SecondWindow::onPenChanged(int color, int width)
             case 7: colorImg = ":/new/prefix1/eraser.png"; break;
             default: colorImg = ":/new/prefix1/black.png"; break;
         }
-    
+
     int qw;
     switch (width) {
                 case 10: qw = 15; break;
                 case 11: qw = 30; break;
                 case 12: qw = 45; break;
+                case 13: qw = 55; break;
     }
-    qDebug() << qw;
+
     QIcon colorIcon(colorImg);
     ui->colorbutton->setIcon(colorIcon);
     ui->colorbutton->setIconSize(QSize(55,55));
@@ -398,8 +376,8 @@ void SecondWindow::resetPenButtons()
     ui->colorbutton->setIcon(colorIcon);
     ui->colorbutton->setIconSize(QSize(55,55));
 
-    // 굵기 버튼(초기: 15)
-    int qw = 15;
+    // 굵기 버튼(초기: 30)
+    int qw = 30;
     int btnX = centerX - qw / 2;
     int btnY = centerY - qw / 2;
     ui->widthbutton->setGeometry(btnX, btnY, qw, qw);
@@ -433,17 +411,18 @@ void SecondWindow::updateTime()
                 connect(blink_timer, &QTimer::timeout, this, &SecondWindow::updateBlink);
                 blink_timer->start(250);
             }
-        }
-        if (!timer->isActive())
-        {
-            if(blink_timer){
-                blink_timer->stop();
-                blink_timer->deleteLater();
-                blink_timer = nullptr;
-                ui->timelabel->setStyleSheet("color: red;");
+            if (!timer->isActive())
+            {
+                if(blink_timer){
+                    blink_timer->stop();
+                    blink_timer->deleteLater();
+                    blink_timer = nullptr;
+                    ui->timelabel->setStyleSheet("color: red;");
+                }
             }
         }
-        qDebug() << ElapsedTime.toString("mm:ss");
+
+        //qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
         blink_timer->stop();
@@ -451,7 +430,7 @@ void SecondWindow::updateTime()
         blink_timer = nullptr;
         ui->timelabel->setStyleSheet("color: red;");
 
-        timeoverRound();
+        send_timeover();
     }
 }
 
