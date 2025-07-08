@@ -384,60 +384,60 @@ border-style:solid;
      </item>
     </layout>
    </widget>
-<widget class="QLabel" name="waiting">
-<property name="geometry">
-<rect>
-<x>80</x>
-<y>280</y>
-<width>861</width>
-<height>61</height>
-</rect>
-</property>
-<property name="font">
-<font>
-<pointsize>25</pointsize>
-</font>
-</property>
-<property name="styleSheet">
-<string notr="true">QLabel{
+   <widget class="QLabel" name="waiting">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>280</y>
+      <width>861</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>25</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel{
 background-color:white;
 color: black;
 border-width: 3px;
 border-color: skyblue;
 border-style: solid;
 }</string>
-</property>
-<property name="text">
-<string> Your opponent is thinking</string>
-</property>
-<property name="alignment">
-<set>Qt::AlignCenter</set>
-</property>
-</widget>
-  <widget class="QLabel" name="label_myNum">
-<property name="geometry">
-<rect>
-<x>470</x>
-<y>60</y>
-<width>191</width>
-<height>41</height>
-</rect>
-</property>
-<property name="font">
-<font>
-<pointsize>15</pointsize>
-<weight>75</weight>
-<bold>true</bold>
-</font>
-</property>
-<property name="text">
-<string/>
-</property>
-<property name="alignment">
-<set>Qt::AlignCenter</set>
-</property>
-</widget>
-</widget>
+    </property>
+    <property name="text">
+     <string> Your opponent is thinking</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_myNum">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>60</y>
+      <width>191</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>

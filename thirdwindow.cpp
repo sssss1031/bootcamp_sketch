@@ -238,6 +238,7 @@ void ThirdWindow::timeoverRound(){
     ui->timeover->show();
     timer->stop();
 
+
     count_timer->start(1000);
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
@@ -253,7 +254,8 @@ void ThirdWindow::timeoverRound(){
 
 void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
-    ui->timeover->setText("Time Over!\n정답: " + answer);
+    drawingWidget->setEnabled(false);
+    ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
     ui->timeover->raise();
     ui->timeover->show();
     timer->stop();
@@ -272,7 +274,6 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
             qproperty-alignment: AlignCenter;
         }
     )");
-
     count_timer->start(1000);
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
