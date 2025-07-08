@@ -63,6 +63,7 @@ private slots:
 public slots:
     void updateScoreboard(const ScoreList& players);
     void resetPenButtons();
+    void showTimeOverAnswer(const QString& answer);
 };
 
 #endif // SECONDWINDOW_H

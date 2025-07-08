@@ -210,8 +210,27 @@ void ThirdWindow::updateScoreboard(const ScoreList& players)
          ui->scoreboard->update();
 }
 
+void ThirdWindow::setMyNum(int num) {
+    qDebug() << "setMyNum called, num=" << num;
+    ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
+}
+
 void ThirdWindow::timeoverRound(){
     qDebug() << "time over";
+
+    // 스타일 적용
+    ui->timeover->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
+            border: 3px solid #fff;
+            border-radius: 30px;
+            padding: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+        }
+        )");
 
     ui->timeover->raise();
     ui->timeover->show();
@@ -223,6 +242,40 @@ void ThirdWindow::timeoverRound(){
     ui->countdown->show();
 
     // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
+        ui->timeover->hide();
+        ui->countdown->hide();
+        nextRound(TIME_OVER);
+    });
+}
+
+void ThirdWindow::showTimeOverAnswer(const QString& answer) {
+    qDebug() << "Time over, 정답:" << answer;
+    ui->timeover->setText("Time Over!\n정답: " + answer);
+    ui->timeover->raise();
+    ui->timeover->show();
+    timer->stop();
+
+    // 스타일 적용
+    ui->countdown->setStyleSheet(R"(
+        QLabel {
+            color: #333366;
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #77aaff;
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            qproperty-alignment: AlignCenter;
+        }
+    )");
+
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
     QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();

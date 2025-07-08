@@ -59,6 +59,8 @@ private slots:
 public slots:
     void updateScoreboard(const ScoreList& players);
     void onBeginRound();
+    void setMyNum(int num);
+    void showTimeOverAnswer(const QString& answer);
 };
 
 #endif // THIRDWINDOW_H

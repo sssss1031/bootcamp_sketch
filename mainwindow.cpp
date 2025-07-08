@@ -66,7 +66,7 @@ void MainWindow::on_pushButton_3p_clicked()
 
 void MainWindow::on_pushButton_2p_clicked()
 {
-    desiredMaxPlayer = 2;
+    desiredMaxPlayer = 1;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
 }
@@ -123,7 +123,6 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
     // 내 번호와 비교
     if (selectedNum == my_Num) {
         // SecondWindow 띄우기
-
         secondWindow->show();
         this->hide();
     } else {
