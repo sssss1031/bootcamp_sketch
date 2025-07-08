@@ -312,23 +312,6 @@ void recv_thread(int sockfd) {
                 g_thirdWindow,
                 "onBeginRound",
                 Qt::QueuedConnection);
-//            if (!g_pendingScoreList.empty()){
-//                if (g_secondWindow && g_secondWindow->isVisible()) {
-//                    QMetaObject::invokeMethod(
-//                        g_secondWindow,
-//                        "updateScoreboard",
-//                        Qt::QueuedConnection,
-//                        Q_ARG(ScoreList, g_pendingScoreList)
-//                    );
-//                } else if (g_thirdWindow && g_thirdWindow->isVisible()) {
-//                    QMetaObject::invokeMethod(
-//                        g_thirdWindow,
-//                        "updateScoreboard",
-//                        Qt::QueuedConnection,
-//                        Q_ARG(ScoreList, g_pendingScoreList)
-//                    );
-//                }
-//            }
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
