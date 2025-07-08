@@ -18,7 +18,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ElapsedTime(0,0,20),
     m_count(8),
     m_blinkStarted(false), //timer led blink
-    onBlink(false) // screen timer blink
+    onBlink(false), // screen timer blink
+    current_round(1)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -110,6 +111,11 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     // blink timer
     blink_timer = nullptr;
 
+    ui->roundboard->setText(QString::number(current_round)
+                            + "/" + QString::number(MAX_ROUND));
+    ui->roundboard->raise();
+    ui->roundboard->show();
+
     qDebug() << "second";
 
 }
@@ -170,6 +176,32 @@ void SecondWindow::updateScoreboard(const ScoreList& players)
 
          ui->scoreboard->update();
 }
+
+
+void SecondWindow::updateResultboard(const ScoreList& players)
+{
+    QLabel* resultLabels[3] = {ui->result_1, ui->result_2, ui->result_3};
+
+    for (int i = 0; i < 3; ++i) {
+       resultLabels[i]->clear();
+       resultLabels[i]->setVisible(false);
+    }
+
+    int n = players.size();
+    for (int i = 0; i < n && i < 3; ++i) {
+       const QString& name = players[i].first;
+       int score = players[i].second;
+       resultLabels[i]->setText(QString("%1 : %2").arg(name).arg(score));
+       resultLabels[i]->setVisible(true);
+    }
+    ui->resultwidget->raise();
+    ui->resultwidget->show();
+    ui->correct->hide();
+    ui->timeover->hide();
+    ui->countdown->hide();
+
+}
+
 //내 player 닉네임 띄우기
 void SecondWindow::setMyNum(int num) {
     qDebug() << "setMyNum called, num=" << num;
@@ -247,6 +279,11 @@ void SecondWindow::correctRound(const QString& message){
     timer->stop();
 
     count_timer->start(1000);
+    if (current_round == MAX_ROUND) {
+        QTimer::singleShot(5000, this, [=](){
+            updateResultboard(g_pendingScoreList);
+        });
+        return; }
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
     ui->countdown->show();
@@ -258,6 +295,17 @@ void SecondWindow::correctRound(const QString& message){
         nextRound(correct_num);
     });
 
+}
+
+void SecondWindow::showResult()
+{
+//    ui->resultboard->raise();
+//    ui->resultboard->show();
+//    QTimer::singleShot(9000, this, [=](){
+//        ui->resultboard->hide();
+//        current_round=1;
+//        nextRound(BACKTOMAIN);
+//    });
 }
 
 void SecondWindow::showTimeOverAnswer(const QString& answer) {
@@ -306,6 +354,11 @@ void SecondWindow::showTimeOverAnswer(const QString& answer) {
     )");
 
     count_timer->start(1000);
+    if (current_round == MAX_ROUND) {
+        QTimer::singleShot(5000, this, [=](){
+            updateResultboard(g_pendingScoreList);
+        });
+        return; }
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
     ui->countdown->show();
@@ -337,8 +390,14 @@ void SecondWindow::nextRound(int correct_num)
     m_count = 8;
     count_timer->stop();
 
+    // count round
+    current_round += 1;
+    g_thirdWindow->roundinc();
+    ui->roundboard->setText(QString::number(current_round)
+                            + "/" + QString::number(MAX_ROUND));
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
+    if (correct_num == BACKTOMAIN){ this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); this->show(); }
     else { this->hide(); g_thirdWindow->show(); }
 }
@@ -481,3 +540,7 @@ void SecondWindow::updateCountdown()
     }
 }
 
+void SecondWindow::roundinc()
+{
+    current_round += 1;
+}

@@ -18,7 +18,8 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     m_blinkStarted (false), // led timer blink
     dotCount(0),
     round_start(false),
-    onBlink(false) // screen timer blink
+    onBlink(false), // screen timer blink
+    current_round(1)
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -63,6 +64,8 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
             updateScoreboard(g_pendingScoreList);
             g_hasPendingScore = false;
         }
+
+
     // timer
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ThirdWindow::updateTime);
@@ -80,6 +83,11 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
 
     // blink timer
     blink_timer = nullptr;
+
+    ui->roundboard->setText(QString::number(current_round)
+                            + "/" + QString::number(MAX_ROUND));
+    ui->roundboard->raise();
+    ui->roundboard->show();
 
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
@@ -175,6 +183,11 @@ void ThirdWindow::correctRound(const QString& message){
     timer->stop();
 
     count_timer->start(1000);
+    if (current_round == MAX_ROUND) {
+        QTimer::singleShot(5000, this, [=](){
+            updateResultboard(g_pendingScoreList);
+        });
+        return; }
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
     ui->countdown->show();
@@ -185,6 +198,16 @@ void ThirdWindow::correctRound(const QString& message){
         ui->countdown->hide();
         nextRound(correct_num);
     });
+}
+
+void ThirdWindow::showResult()
+{
+//    ui->resultboard->show();
+//    QTimer::singleShot(9000, this, [=](){
+//        ui->resultboard->hide();
+//        current_round=1;
+//        nextRound(BACKTOMAIN);
+//    });
 }
 
 void ThirdWindow::updateScoreboard(const ScoreList& players)
@@ -212,6 +235,30 @@ void ThirdWindow::updateScoreboard(const ScoreList& players)
          }
 
          ui->scoreboard->update();
+}
+
+void ThirdWindow::updateResultboard(const ScoreList& players)
+{
+    QLabel* resultLabels[3] = {ui->result_1, ui->result_2, ui->result_3};
+
+    for (int i = 0; i < 3; ++i) {
+       resultLabels[i]->clear();
+       resultLabels[i]->setVisible(false);
+    }
+
+    int n = players.size();
+    for (int i = 0; i < n && i < 3; ++i) {
+       const QString& name = players[i].first;
+       int score = players[i].second;
+
+       resultLabels[i]->setText(QString("%1 : %2").arg(name).arg(score));
+       resultLabels[i]->setVisible(true);
+    }
+    ui->resultwidget->raise();
+    ui->resultwidget->show();
+    ui->correct->hide();
+    ui->timeover->hide();
+    ui->countdown->hide();
 }
 
 void ThirdWindow::setMyNum(int num) {
@@ -262,7 +309,12 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
             qproperty-alignment: AlignCenter;
         }
     )");
-    count_timer->start(1000);
+    count_timer->start(1000);    
+    if (current_round == MAX_ROUND) {
+        QTimer::singleShot(5000, this, [=](){
+            updateResultboard(g_pendingScoreList);
+        });
+        return; }
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     ui->countdown->raise();
     ui->countdown->show();
@@ -290,8 +342,14 @@ void ThirdWindow::nextRound(int correct_num)
     m_count = 8;
     count_timer->stop();
 
+    // count round
+    current_round += 1;
+    g_secondWindow->roundinc();
+    ui->roundboard->setText(QString::number(current_round)
+                            + "/" + QString::number(MAX_ROUND));
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
+    if (correct_num == BACKTOMAIN){ this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
     else { this->hide(); this->show(); }
 }
@@ -376,4 +434,10 @@ void ThirdWindow::updateWaiting()
     dotCount = ((dotCount + 1) % 4 );
     QString dots(dotCount, '.');
     ui->waiting->setText("Your opponent is thinking" + dots);
+}
+
+
+void ThirdWindow::roundinc()
+{
+    current_round += 1;
 }

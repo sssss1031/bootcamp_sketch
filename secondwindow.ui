@@ -272,6 +272,13 @@ border-radius:10px;
     <zorder>buttoncover</zorder>
     <zorder>colorbutton</zorder>
     <zorder>widthbutton</zorder>
+    <zorder>resP3</zorder>
+    <zorder>resP1_score</zorder>
+    <zorder>resP3_score</zorder>
+    <zorder>resP2_score</zorder>
+    <zorder>resP1</zorder>
+    <zorder>resP2</zorder>
+    <zorder>gridLayoutWidget_2</zorder>
    </widget>
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
@@ -408,11 +415,11 @@ border-style:solid;
      <string>Chat</string>
     </property>
    </widget>
-   <widget class="QLabel" name="roundboard">
+   <widget class="QLabel" name="roundtxt">
     <property name="geometry">
      <rect>
       <x>690</x>
-      <y>60</y>
+      <y>0</y>
       <width>101</width>
       <height>41</height>
      </rect>
@@ -430,6 +437,73 @@ border-style:solid;
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
+   </widget>
+   <widget class="QWidget" name="resultwidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>209</x>
+      <y>130</y>
+      <width>581</width>
+      <height>381</height>
+     </rect>
+    </property>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>581</width>
+       <height>491</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="resultLayout">
+      <item>
+       <widget class="QLabel" name="result_1">
+        <property name="font">
+         <font>
+          <pointsize>30</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="result_2">
+        <property name="font">
+         <font>
+          <pointsize>30</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="result_3">
+        <property name="font">
+         <font>
+          <pointsize>30</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QLabel" name="label_answer">
     <property name="geometry">
@@ -576,6 +650,29 @@ border-style:solid;
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="roundboard">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>20</y>
+      <width>101</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>22</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Round</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
    <zorder>label_myNum</zorder>
    <zorder>backbutton</zorder>
    <zorder>frame</zorder>
@@ -585,9 +682,10 @@ border-style:solid;
    <zorder>countdown</zorder>
    <zorder>scoreboard</zorder>
    <zorder>label_3</zorder>
-   <zorder>roundboard</zorder>
+   <zorder>roundtxt</zorder>
    <zorder>label_answer</zorder>
    <zorder>gridLayoutWidget</zorder>
+   <zorder>roundboard</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
