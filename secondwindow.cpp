@@ -17,8 +17,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
     m_count(8),
-    m_blinkStarted(false)
-
+    m_blinkStarted(false) //timer led blink
+    onBlink(false) // screen timer blink
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -106,6 +106,9 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
 
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &SecondWindow::updateCountdown);
+
+    // blink timer
+    blink_timer = nullptr;
 
     qDebug() << "second";
 
@@ -250,11 +253,64 @@ void SecondWindow::correctRound(const QString& message){
 void SecondWindow::timeoverRound(){
     qDebug() << "time over";
 
-    drawingWidget->setEnabled(false); //그림 안그려지게
+    drawingWidget->setEnabled(false); //그림 안그려지
+
+    send_timeover();
+
+    // 스타일 적용
+    ui->timeover->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
+            border: 3px solid #fff;
+            border-radius: 30px;
+            padding: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+        }
+        )");
 
     ui->timeover->raise();
     ui->timeover->show();
     timer->stop();
+
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
+    // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
+        ui->timeover->hide();
+        ui->countdown->hide();
+        nextRound(TIME_OVER);
+    });
+}
+
+void SecondWindow::showTimeOverAnswer(const QString& answer) {
+    // 기존 timeoverRound에서 정답을 받아 표시하도록 수정
+    qDebug() << "Time over, 정답:" << answer;
+    drawingWidget->setEnabled(false);
+    ui->timeover->setText("Time Over!\n Answer is.." + answer); // 정답 표시
+    ui->timeover->raise();
+    ui->timeover->show();
+    timer->stop();
+
+    // 스타일 적용
+    ui->countdown->setStyleSheet(R"(
+        QLabel {
+            color: #333366;
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #77aaff;
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            qproperty-alignment: AlignCenter;
+        }
+    )");
 
     count_timer->start(1000);
     ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
@@ -365,14 +421,51 @@ void SecondWindow::updateTime()
         {
             ui->timelabel->setStyleSheet("color: red;");
         }
-        if (ElapsedTime == QTime(0,0,10) && !m_blinkStarted) {
-                    m_blinkStarted = true;
-                    handle_device_control_request(LED_TIMER);
-         }
-
+        if (ElapsedTime <= QTime(0,0,10))
+        {
+            if(!m_blinkStarted)
+            {
+                m_blinkStarted = true;
+                handle_device_control_request(LED_TIMER);
+            }
+            if(!blink_timer){
+                // blink timer
+                blink_timer = new QTimer(this);
+                connect(blink_timer, &QTimer::timeout, this, &SecondWindow::updateBlink);
+                blink_timer->start(250);
+            }
+        }
+        if (!timer->isActive())
+        {
+            if(blink_timer){
+                blink_timer->stop();
+                blink_timer->deleteLater();
+                blink_timer = nullptr;
+                ui->timelabel->setStyleSheet("color: red;");
+            }
+        }
+        qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
+
         timeoverRound();
+    }
+}
+
+void SecondWindow::updateBlink()
+{
+    onBlink = !onBlink;
+    if (onBlink)
+    {
+        ui->timelabel->setStyleSheet("color: red;");
+    }
+    else
+    {
+        ui->timelabel->setStyleSheet("color: transparent;");
     }
 }
 

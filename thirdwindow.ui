@@ -45,9 +45,9 @@
     <widget class="QLabel" name="timeover">
      <property name="geometry">
       <rect>
-       <x>350</x>
+       <x>230</x>
        <y>90</y>
-       <width>261</width>
+       <width>471</width>
        <height>231</height>
       </rect>
      </property>
@@ -383,6 +383,79 @@ border-style:solid;
       </widget>
      </item>
     </layout>
+   </widget>
+<<<<<<< HEAD
+   <widget class="QLabel" name="waiting">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>280</y>
+      <width>861</width>
+      <height>61</height>
+=======
+   <widget class="QLabel" name="label_myNum">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>60</y>
+      <width>191</width>
+      <height>41</height>
+>>>>>>> 253dd1c (Timeout -> send answer)
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+<<<<<<< HEAD
+      <pointsize>25</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel{
+background-color:white;
+color: black;
+border-width: 3px;
+border-color: skyblue;
+border-style: solid;
+}</string>
+    </property>
+    <property name="text">
+     <string> Your opponent is thinking</string>
+=======
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>60</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Round</string>
+>>>>>>> 253dd1c (Timeout -> send answer)
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

@@ -35,6 +35,9 @@ private:
     bool m_blinkStarted;
     QTimer *timer;
     QTimer *count_timer;
+    QTimer *blink_timer;
+    bool onBlink;
+
     void timeoverRound();
     void nextRound(int correct_num);
 
@@ -56,10 +59,12 @@ private slots:
     void onPenChanged(int color, int width);
     void updateTime();
     void updateCountdown();
+    void updateBlink();
 
 public slots:
     void updateScoreboard(const ScoreList& players);
     void resetPenButtons();
+    void showTimeOverAnswer(const QString& answer);
 };
 
 #endif // SECONDWINDOW_H

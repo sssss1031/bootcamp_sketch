@@ -229,6 +229,16 @@ void recv_thread(int sockfd) {
                         qDebug() << "invokeMethod setMyNum ok?" << ok;
                     }
 
+            if (g_thirdWindow && g_thirdWindow->isVisible()) {
+                bool ok = QMetaObject::invokeMethod(
+                    g_thirdWindow,
+                    "setMyNum",
+                    Qt::QueuedConnection,
+                    Q_ARG(int, pkt.player_num)
+                );
+                qDebug() << "invokeMethod setMyNum (3rd) ok?" << ok;
+            }
+
         }
         else if (msg_type == MSG_PLAYER_CNT) {
             PlayerCntPacket pkt;
@@ -312,23 +322,27 @@ void recv_thread(int sockfd) {
                 g_thirdWindow,
                 "onBeginRound",
                 Qt::QueuedConnection);
-//            if (!g_pendingScoreList.empty()){
-//                if (g_secondWindow && g_secondWindow->isVisible()) {
-//                    QMetaObject::invokeMethod(
-//                        g_secondWindow,
-//                        "updateScoreboard",
-//                        Qt::QueuedConnection,
-//                        Q_ARG(ScoreList, g_pendingScoreList)
-//                    );
-//                } else if (g_thirdWindow && g_thirdWindow->isVisible()) {
-//                    QMetaObject::invokeMethod(
-//                        g_thirdWindow,
-//                        "updateScoreboard",
-//                        Qt::QueuedConnection,
-//                        Q_ARG(ScoreList, g_pendingScoreList)
-//                    );
-//                }
-//            }
+        }else if (msg_type == MSG_TIME_OVER) {
+            // 서버로부터 정답 문자열 받기
+            std::string answer = recv_string(sockfd);
+
+            // 세컨드윈도우에서 정답을 보여주도록 신호 전달
+            if (g_secondWindow && g_secondWindow->isVisible()) {
+                QMetaObject::invokeMethod(
+                    g_secondWindow,
+                    "showTimeOverAnswer",
+                    Qt::QueuedConnection,
+                    Q_ARG(QString, QString::fromStdString(answer))
+                );
+            }
+            if (g_thirdWindow && g_thirdWindow->isVisible()) {
+                QMetaObject::invokeMethod(
+                    g_thirdWindow,
+                    "showTimeOverAnswer",
+                    Qt::QueuedConnection,
+                    Q_ARG(QString, QString::fromStdString(answer))
+                );
+            }
         } else {
             char buf[256];
             recv(sockfd, buf, sizeof(buf), 0);
@@ -358,6 +372,11 @@ void send_erase(){
     SendTypePacket erase_pkt;
     erase_pkt.type = MSG_ERASE_ALL;
     send(sockfd, &erase_pkt, sizeof(erase_pkt), 0);
+}
+
+void send_timeover() {
+    int type = MSG_TIME_OVER;
+    send(sockfd, &type, sizeof(type), 0);
 }
 
 void run_client(int maxPlayer) {

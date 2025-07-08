@@ -15,7 +15,10 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
     m_count(8),
-    m_blinkStarted (false)
+    m_blinkStarted (false), // led timer blink
+    dotCount(0),
+    round_start(false),
+    onBlink(false) // screen timer blink
 {
     ui->setupUi(this);
     this->setAutoFillBackground(true);
@@ -26,6 +29,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->show();
     drawingWidget->setEnabled(false);
     ui->countdown->hide();
+    ui->waiting->raise();
 
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &ThirdWindow::backToMainRequested);
@@ -76,6 +80,14 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     count_timer = new QTimer(this);
     connect(count_timer, &QTimer::timeout, this, &ThirdWindow::updateCountdown);
 
+    // waiting timer
+    waiting_timer = new QTimer(this);
+    connect(waiting_timer, &QTimer::timeout, this, &ThirdWindow::updateWaiting);
+    waiting_timer->start(1000);
+
+    // blink timer
+    blink_timer = nullptr;
+
     //run_client();
     run_client(m_maxPlayer); // maxPlayer 인자 전달
     qDebug() << "third";
@@ -123,19 +135,22 @@ void ThirdWindow::onLineEditReturnPressed()
         }
 }
 
-void ThirdWindow::showEvent(QShowEvent* event)
+void ThirdWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
-
-    updateScoreboard(g_pendingScoreList);
+    QTimer::singleShot(0, this, [this]() {
+            ui->waiting->show();
+            updateScoreboard(g_pendingScoreList);
+    });
 }
 
 
 void ThirdWindow::onBeginRound()
 {
-    round_start = true;;
+    round_start = true;
+    ui->waiting->hide();
+    qDebug()<<"onBeginRound";
     timer->start(1000);
-
 }
 
 //메시지 채팅
@@ -197,8 +212,27 @@ void ThirdWindow::updateScoreboard(const ScoreList& players)
          ui->scoreboard->update();
 }
 
+void ThirdWindow::setMyNum(int num) {
+    qDebug() << "setMyNum called, num=" << num;
+    ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
+}
+
 void ThirdWindow::timeoverRound(){
     qDebug() << "time over";
+
+    // 스타일 적용
+    ui->timeover->setStyleSheet(R"(
+        QLabel {
+            color: #fff;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #ff5f6d, stop:1 #ffc371);
+            border: 3px solid #fff;
+            border-radius: 30px;
+            padding: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            qproperty-alignment: AlignCenter;
+        }
+        )");
 
     ui->timeover->raise();
     ui->timeover->show();
@@ -210,6 +244,40 @@ void ThirdWindow::timeoverRound(){
     ui->countdown->show();
 
     // after 8 secs, next round begins
+    QTimer::singleShot(9000, this, [=](){
+        ui->timeover->hide();
+        ui->countdown->hide();
+        nextRound(TIME_OVER);
+    });
+}
+
+void ThirdWindow::showTimeOverAnswer(const QString& answer) {
+    qDebug() << "Time over, 정답:" << answer;
+    ui->timeover->setText("Time Over!\n정답: " + answer);
+    ui->timeover->raise();
+    ui->timeover->show();
+    timer->stop();
+
+    // 스타일 적용
+    ui->countdown->setStyleSheet(R"(
+        QLabel {
+            color: #333366;
+            background: rgba(255,255,255,0.85);
+            border: 2px solid #77aaff;
+            border-radius: 20px;
+            padding: 20px 40px;
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            qproperty-alignment: AlignCenter;
+        }
+    )");
+
+    count_timer->start(1000);
+    ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
+    ui->countdown->raise();
+    ui->countdown->show();
+
     QTimer::singleShot(9000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
@@ -245,18 +313,54 @@ void ThirdWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
+        qDebug() << "ThirdWindow address:" << this;
         if (ElapsedTime < QTime(0,0,31))
         {
             ui->timelabel->setStyleSheet("color: red;");
+        }        
+        if (ElapsedTime <= QTime(0,0,10))
+        {
+            if(!blink_timer){
+                // blink timer
+                blink_timer = new QTimer(this);
+                connect(blink_timer, &QTimer::timeout, this, &ThirdWindow::updateBlink);
+                blink_timer->start(250);
+            }
         }
         if (ElapsedTime == QTime(0,0,10) && !m_blinkStarted) {
                     m_blinkStarted = true;
                     handle_device_control_request(LED_TIMER);
          }
+        if (!timer->isActive())
+        {
+            if(blink_timer){
+                blink_timer->stop();
+                blink_timer->deleteLater();
+                blink_timer = nullptr;
+                ui->timelabel->setStyleSheet("color: red;");
+            }
+        }
         //qDebug() << ElapsedTime.toString("mm:ss");
     }
     else {
+        blink_timer->stop();
+        blink_timer->deleteLater();
+        blink_timer = nullptr;
+        ui->timelabel->setStyleSheet("color: red;");
         timeoverRound();
+    }
+}
+
+void ThirdWindow::updateBlink()
+{
+    onBlink = !onBlink;
+    if (onBlink)
+    {
+        ui->timelabel->setStyleSheet("color: red;");
+    }
+    else
+    {
+        ui->timelabel->setStyleSheet("color: transparent;");
     }
 }
 
@@ -268,4 +372,11 @@ void ThirdWindow::updateCountdown()
         m_count--;
         ui->countdown->setText("NEXT ROUND STARTS IN: " + (QString::number(m_count)) + " Secs..");
     }
+}
+
+void ThirdWindow::updateWaiting()
+{
+    dotCount = ((dotCount + 1) % 4 );
+    QString dots(dotCount, '.');
+    ui->waiting->setText("Your opponent is thinking" + dots);
 }

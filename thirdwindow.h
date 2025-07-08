@@ -31,11 +31,18 @@ private:
 
     QTime ElapsedTime;
     int m_count;
+<<<<<<< HEAD
     bool m_blinkStarted;
+=======
+    int dotCount;
+>>>>>>> 36760ad20a0c7687ad95d761da599236d5283b70
     QTimer *timer;
     QTimer *count_timer;
-    bool round_start = false;
+    QTimer *waiting_timer;
+    QTimer *blink_timer;
 
+    bool round_start;
+    bool onBlink;
     void timeoverRound();
     void nextRound(int correct_num);
 
@@ -50,10 +57,17 @@ private slots:
     void correctRound(const QString &message);
     void updateTime();
     void updateCountdown();
+    void updateWaiting();
+    void updateBlink();
 
 public slots:
     void updateScoreboard(const ScoreList& players);
     void onBeginRound();
+<<<<<<< HEAD
+=======
+    void setMyNum(int num);
+    void showTimeOverAnswer(const QString& answer);
+>>>>>>> 36760ad20a0c7687ad95d761da599236d5283b70
 };
 
 #endif // THIRDWINDOW_H
