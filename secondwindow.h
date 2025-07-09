@@ -8,8 +8,7 @@
 #include "scorelist.h"
 
 #define TIME_OVER 9999
-#define BACKTOMAIN 10000
-#define MAX_ROUND 2
+#define MAX_ROUND 4
 
 namespace Ui {
 class SecondWindow;
@@ -53,6 +52,48 @@ private:
     const int originH = 61;
     const int centerX = originX + originW / 2;
     const int centerY = originY + originH / 2;
+    const std::vector<const char*> quizWords = {
+        "apple",
+        "car",
+        "sun",
+        "cat",
+        "book",
+        "ball",
+        "house",
+        "tree",
+        "fish",
+        "dog",
+        "guitar",
+        "pizza",
+        "mirror",
+        "camera",
+        "robot",
+        "ghost",
+        "alien",
+        "clock",
+        "zoo",
+        "beach",
+        "ninja",
+        "pirate",
+        "market",
+        "park",
+        "dance",
+        "crying",
+        "jumping",
+        "eating",
+        "sleepy",
+        "angry",
+        "library",
+        "running",
+        "monster",
+        "backpack",
+        "glasses",
+        "candle",
+        "banana",
+        "time",
+        "laughing",
+        "swimming"
+    };
 protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent* event) override;

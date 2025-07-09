@@ -6,6 +6,7 @@
 #include <thread>
 #include <cstring>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <atomic>
@@ -152,9 +153,9 @@ void recv_thread(int sockfd) {
         ssize_t n = recv(sockfd, &msg_type, sizeof(int), 0);
         if (n <= 0) {
             // 서버가 MSG_REJECTED 없이 정상적으로 끊은 경우 메시지박스 X
-            if (isRejected) {
+            //if (isRejected) {
                 break;
-            }
+            //}
         }
         if (msg_type == MSG_DRAW) {
             DrawPacket pkt;
@@ -315,7 +316,6 @@ void recv_thread(int sockfd) {
                      );
             }
         } else if (msg_type == MSG_SET_TRUE_ANSWER){
-            qDebug()<<"receive true answer";
             std::string received_ans = recv_string(sockfd);
             std::cout<<received_ans<<endl;
                 QMetaObject::invokeMethod(
@@ -391,6 +391,17 @@ void run_client(int maxPlayer) {
         }
     desiredMaxPlayer = maxPlayer;
     qDebug() << "run_client called, player count =" << maxPlayer;
+
+    int enable_keepalive = 1;
+    int keepidle = 3;    // Time (in seconds) before sending keep-alive probes
+    int keepinterval = 1; // Interval (in seconds) between probes
+    int keepcount = 1;    // Number of failed probes before closing the connection
+
+    setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &enable_keepalive, sizeof(enable_keepalive));
+    setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle));
+    setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepinterval, sizeof(keepinterval));
+    setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcount, sizeof(keepcount));
+
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) { perror("socket"); exit(1); }
     sockaddr_in serv_addr{};

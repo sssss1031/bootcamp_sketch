@@ -10,8 +10,7 @@
 #include "scorelist.h"
 
 #define TIME_OVER 9999
-#define BACKTOMAIN 10000
-#define MAX_ROUND 2
+#define MAX_ROUND 4
 
 namespace Ui {
 class ThirdWindow;

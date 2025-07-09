@@ -8,12 +8,13 @@
 #include "gpio_control.h"
 #include <QDebug>
 #include "chatmessagedispatcher.h"
+#include <QRegularExpression>
 
 ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::ThirdWindow),
     m_maxPlayer(maxPlayer),
-    ElapsedTime(0,0,20),
+    ElapsedTime(0,0,30),
     m_count(5),
     m_blinkStarted (false), // led timer blink
     dotCount(0),
@@ -34,6 +35,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setEnabled(false);
     ui->countdown->hide();
     ui->waiting->raise();
+    ui->resultwidget->hide();
 
     hintFrame = ui->hintFrame;
     hintLabel = ui->hintLabel;
@@ -191,14 +193,12 @@ void ThirdWindow::resizeEvent(QResizeEvent *event)
 void ThirdWindow::onLineEditReturnPressed()
 {
     QString text = ui->lineEdit->text();
-    if (text.isEmpty()) {
-            qDebug() << "Nothing.";
-            send_answer("Nothing");
-        } else {
-            qDebug() << "Answer:" << text;
-            send_answer(text.toStdString());
+    if (!text.isEmpty()) {
+        qDebug() << "Answer:" << text;
+        send_answer(text.toStdString());
             // 추가 동작 필요 시 여기에 작성
-        }
+        ui->lineEdit->clear();
+    }
 }
 
 void ThirdWindow::showEvent(QShowEvent *event)
@@ -209,6 +209,7 @@ void ThirdWindow::showEvent(QShowEvent *event)
     QTimer::singleShot(0, this, [this]() {
 
             ui->waiting->show();
+            ui->hintFrame->hide();
             updateScoreboard(g_pendingScoreList);
 
             ui->roundboard->setText(QString::number(current_round)
@@ -227,7 +228,6 @@ QString ThirdWindow::makeHint(const QString& answer) const {
 void ThirdWindow::showHint(const QString& answer)
 {
     QString hint = makeHint(answer);
-    hintLabel->setText(hint);
     hintLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
     QFontMetrics fm(hintLabel->font());
@@ -284,14 +284,12 @@ void ThirdWindow::onBeginRound(const QString& answer)
     ui->waiting->hide();
     qDebug()<<"onBeginRound";
     timer->start(1000);
+    ui->hintFrame->show();
 
     m_answerStr = answer;
+    QString hint = makeHint(answer);
+    hintLabel->setText(hint);
 
-    if (ElapsedTime <= QTime(0,0,10)) {
-       showHint(m_answerStr);
-    } else {
-       hideHint();
-    }
 }
 
 //메시지 채팅
@@ -301,7 +299,6 @@ void ThirdWindow::appendChatMessage(const QString& message) {
 }
 
 void ThirdWindow::correctRound(const QString& message){
-    qDebug() << "correct! msg: " << message;
     ui->lineEdit->setEnabled(false);
     ui->enterButton->setEnabled(false);
 
@@ -378,13 +375,21 @@ void ThirdWindow::updateScoreboard(const ScoreList& players)
      int start_col = (3-n)/2;
 
      for (int i = 0; i < n; ++i) {
-             int idx = start_col + i;
-             if (idx < 0 || idx >= 3) continue;
-             nameLabels[idx]->setText(players[i].first);
-             scoreLabels[idx]->setText(QString::number(players[i].second));
-             nameLabels[idx]->setVisible(true);
-             scoreLabels[idx]->setVisible(true);
-         }
+         int idx = start_col + i;
+         if (idx < 0 || idx >= 3) continue;
+
+         // playerX에서 숫자만 추출
+         QString playerName = players[i].first;
+         QRegularExpression re("\\d+");
+         QRegularExpressionMatch match = re.match(playerName);
+         QString numberStr = match.hasMatch() ? match.captured() : QString::number(i+1);
+
+         // "P" + 숫자 형태로 표시
+         nameLabels[idx]->setText("P" + numberStr);
+         scoreLabels[idx]->setText(QString::number(players[i].second));
+         nameLabels[idx]->setVisible(true);
+         scoreLabels[idx]->setVisible(true);
+     }
 
          ui->scoreboard->update();
 }
@@ -414,7 +419,7 @@ void ThirdWindow::updateResultboard(const ScoreList& players)
 }
 
 void ThirdWindow::setMyNum(int num) {
-    qDebug() << "setMyNum called, num=" << num;
+
     ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
 }
 
@@ -516,8 +521,14 @@ void ThirdWindow::nextRound(int correct_num)
     drawingWidget->erase();
     drawingWidget->reset();
 
+    hintFrame->setVisible(false);
+    hintLabel->setVisible(false);
+    touchLabel->setVisible(true);
+
+    ui->lineEdit->clear();
+
     // timer
-    ElapsedTime = QTime(0,0,20);
+    ElapsedTime = QTime(0,0,30);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
 
@@ -530,7 +541,6 @@ void ThirdWindow::nextRound(int correct_num)
     g_secondWindow->roundinc();
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == BACKTOMAIN){ ui->textEdit->clear(); this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
     else { this->hide(); this->show(); }
 }
@@ -541,7 +551,7 @@ void ThirdWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
-        if (ElapsedTime < QTime(0,0,31))
+        if (ElapsedTime < QTime(0,0,21))
         {
             ui->timelabel->setStyleSheet("color: red;");
         }        
