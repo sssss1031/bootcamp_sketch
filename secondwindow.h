@@ -8,6 +8,9 @@
 #include "scorelist.h"
 
 #define TIME_OVER 9999
+#define BACKTOMAIN 10000
+#define MAX_ROUND 4
+
 namespace Ui {
 class SecondWindow;
 }
@@ -19,6 +22,7 @@ class SecondWindow : public QMainWindow
 public:
     explicit SecondWindow(int maxPlayer = 2, QWidget *parent = nullptr);
     TouchDrawingWidget *drawingWidget;
+    void roundinc();
     ~SecondWindow();
 
 public slots:
@@ -37,12 +41,14 @@ private:
     QTimer *count_timer;
     QTimer *blink_timer;
     bool onBlink;
+    int current_round;
 
     void timeoverRound();
     void nextRound(int correct_num);
+    void showResult();
 
-    const int originX = 110;
-    const int originY = 20;
+    const int originX = 120;
+    const int originY = 40;
     const int originW = 61;
     const int originH = 61;
     const int centerX = originX + originW / 2;
@@ -63,6 +69,7 @@ private slots:
 
 public slots:
     void updateScoreboard(const ScoreList& players);
+    void updateResultboard(const ScoreList& players);
     void resetPenButtons();
     void showTimeOverAnswer(const QString& answer);
 };

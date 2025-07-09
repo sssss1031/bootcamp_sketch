@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/new/prefix1">
-        <file>background_gpt.png</file>
         <file>background2_gpt.png</file>
         <file>background3_gpt.jpeg</file>
         <file>black.png</file>
@@ -10,5 +9,6 @@
         <file>white.png</file>
         <file>yellow.png</file>
         <file>eraser.png</file>
+        <file>whiteboard.png</file>
     </qresource>
 </RCC>
