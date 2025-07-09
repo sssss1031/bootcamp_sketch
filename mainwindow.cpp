@@ -59,6 +59,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_3p_clicked()
 {
+    qDebug()<<"3pclicked!!!!!!!!!!";
     desiredMaxPlayer = 3;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);
@@ -66,6 +67,7 @@ void MainWindow::on_pushButton_3p_clicked()
 
 void MainWindow::on_pushButton_2p_clicked()
 {
+    qDebug()<<"2pclicked!!!!!!!!!!";
     desiredMaxPlayer = 2;
     isInWaitingState = true;
     run_client(desiredMaxPlayer);

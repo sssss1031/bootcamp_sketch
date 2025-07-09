@@ -53,7 +53,8 @@ void PlayBgm::inPlayOnLoop(const std::string& wavFileName)
     std::string bgmPath = "/mnt/sd/music/" + wavFileName;
     char * const cmdPlayArgv[] = {
         "/usr/bin/aplay",
-        "-Dhw:3,0",
+        "-D",
+        "plughw:3,0",
         const_cast<char*>(bgmPath.c_str()),
         NULL
     };
@@ -88,7 +89,8 @@ void PlayBgm::inPlayOnce(const std::string& wavFileName)
     std::string bgmPath = "/mnt/sd/music/" + wavFileName;
     char * const cmdPlayArgv[] = {
         "/usr/bin/aplay",
-        "-Dhw:3,0",
+        "-D",
+        "plughw:3,0",
         const_cast<char*>(bgmPath.c_str()),
         NULL
     };

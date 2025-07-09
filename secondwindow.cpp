@@ -9,13 +9,16 @@
 #include <QDebug>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <cstdlib>
+#include <ctime>
 #include "chatmessagedispatcher.h"
+#include <QRegularExpression>
 
 SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
-    ElapsedTime(0,0,20),
+    ElapsedTime(0,0,40),
     m_count(5),
     m_blinkStarted(false), //timer led blink
     onBlink(false), // screen timer blink
@@ -24,6 +27,8 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->setupUi(this);
     this->setAutoFillBackground(true);
 
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+
     // QFrame에 TouchDrawingWidget 생성 및 배치
     drawingWidget = new TouchDrawingWidget(ui->frame);
     //drawingWidget->setGeometry(ui->frame->rect());
@@ -31,6 +36,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setEnabled(true);
 
     ui->countdown->hide();
+    ui->resultwidget->hide();
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
@@ -130,8 +136,6 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui->roundboard->raise();
     ui->roundboard->show();
 
-    qDebug() << "second";
-
     ui->correct->setStyleSheet(R"(
         QLabel {
             color: #fff;
@@ -219,12 +223,20 @@ void SecondWindow::updateScoreboard(const ScoreList& players)
      int start_col = (3-n)/2;
 
      for (int i = 0; i < n; ++i) {
-             int idx = start_col + i;
-             if (idx < 0 || idx >= 3) continue;
-             nameLabels[idx]->setText(players[i].first);
-             scoreLabels[idx]->setText(QString::number(players[i].second));
-             nameLabels[idx]->setVisible(true);
-             scoreLabels[idx]->setVisible(true);
+         int idx = start_col + i;
+         if (idx < 0 || idx >= 3) continue;
+
+         // playerX에서 숫자만 추출
+         QString playerName = players[i].first;
+         QRegularExpression re("\\d+");
+         QRegularExpressionMatch match = re.match(playerName);
+         QString numberStr = match.hasMatch() ? match.captured() : QString::number(i+1);
+
+         // "P" + 숫자 형태로 표시
+         nameLabels[idx]->setText("P" + numberStr);
+         scoreLabels[idx]->setText(QString::number(players[i].second));
+         nameLabels[idx]->setVisible(true);
+         scoreLabels[idx]->setVisible(true);
          }
 
          ui->scoreboard->update();
@@ -257,7 +269,6 @@ void SecondWindow::updateResultboard(const ScoreList& players)
 
 //내 player 닉네임 띄우기
 void SecondWindow::setMyNum(int num) {
-    qDebug() << "setMyNum called, num=" << num;
     ui->label_myNum->setText(QString("I'm Player: %1").arg(num));
 }
 
@@ -279,7 +290,10 @@ void SecondWindow::showEvent(QShowEvent* event) {
                 inputDialog.setWindowTitle("INPUT Value");
                 inputDialog.setLabelText("Input The Word to Draw:");
                 inputDialog.setInputMode(QInputDialog::TextInput);
-                inputDialog.setTextValue("Nothing");
+
+                int randomIndex = std::rand() % 40;
+                inputDialog.setTextValue(quizWords[randomIndex]);
+
                 inputDialog.resize(460, 420);
                 inputDialog.move(240, 200);
                 
@@ -341,7 +355,6 @@ void SecondWindow::appendChatMessage(const QString& message) {
 }
 
 void SecondWindow::correctRound(const QString& message){
-    qDebug() << "correct! msg: " << message;
 
 
     if(blink_timer){
@@ -452,7 +465,7 @@ void SecondWindow::nextRound(int correct_num)
     resetPenButtons();
 
     // timer
-    ElapsedTime = QTime(0,0,20);
+    ElapsedTime = QTime(0,0,40);
     ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
     ui->timelabel->setStyleSheet("color: black;");
 
@@ -505,9 +518,6 @@ void SecondWindow::onPenChanged(int color, int width)
             .arg(qw/2)
     );
 
-    // countdown timer
-    m_count = 8;
-    count_timer->stop();
 }
 
 
@@ -536,7 +546,7 @@ void SecondWindow::updateTime()
     {
         ElapsedTime = ElapsedTime.addSecs(-1);
         ui->timelabel->setText(ElapsedTime.toString("mm:ss"));
-        if (ElapsedTime < QTime(0,0,31))
+        if (ElapsedTime < QTime(0,0,21))
         {
             ui->timelabel->setStyleSheet("color: red;");
         }
