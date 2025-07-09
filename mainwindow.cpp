@@ -91,15 +91,23 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
         selectedNum = rx.cap(1).toInt();
     }
     if (!secondWindow) {
+        qDebug()<<"make secondwindow!!!!!!!!!!!!!!";
         secondWindow = new SecondWindow(serverMaxPlayer); // maxPlayer로 생성
         connect(secondWindow, &SecondWindow::backToMain, this, [this]() {
             this->show();
             isInWaitingState = false;
             ui->label_playerCount->setText("");
             secondWindow->deleteLater();
+            thirdWindow->deleteLater();
             if (secondWindow) {
+                secondWindow->drawingWidget = nullptr;
                 secondWindow = nullptr;
                 g_secondWindow = nullptr;
+            }
+            if (thirdWindow) {
+                thirdWindow->drawingWidget = nullptr;
+                thirdWindow = nullptr;
+                g_thirdWindow = nullptr;
             }
         });
         g_secondWindow = secondWindow;
@@ -107,15 +115,23 @@ void MainWindow::onSelectedPlayerNickname(const QString& nickname) {
     }
     // ThirdWindow 띄우기
     if (!thirdWindow) {
+        qDebug()<<"make thirdwindow!!!!!!!!!!!!!!";
         thirdWindow = new ThirdWindow(serverMaxPlayer);
         connect(thirdWindow, &ThirdWindow::backToMain, this, [this]() {
             this->show();
             isInWaitingState = false;
             ui->label_playerCount->setText("");
             thirdWindow->deleteLater();
+            secondWindow->deleteLater();
             if (thirdWindow) {
+                thirdWindow->drawingWidget = nullptr;
                 thirdWindow = nullptr;
                 g_thirdWindow = nullptr;
+            }
+            if (secondWindow) {
+                secondWindow->drawingWidget = nullptr;
+                secondWindow = nullptr;
+                g_secondWindow = nullptr;
             }
         });
         g_thirdWindow = thirdWindow;

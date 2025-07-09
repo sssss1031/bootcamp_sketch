@@ -16,7 +16,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     ui(new Ui::SecondWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
-    m_count(8),
+    m_count(5),
     m_blinkStarted(false), //timer led blink
     onBlink(false), // screen timer blink
     current_round(1)
@@ -158,6 +158,9 @@ SecondWindow::~SecondWindow()
 }
 
 void SecondWindow::backToMainRequested() {
+    current_round=1;
+    g_thirdWindow->roundinit();
+    ui->textEdit->clear();
     disconnect_client();  // 연결 해제
     emit backToMain();  // 메인 윈도우로 돌아가기
 }
@@ -374,7 +377,7 @@ void SecondWindow::correctRound(const QString& message){
     ui->countdown->show();
 
     // after 8 secs, next round begins
-    QTimer::singleShot(9000, this, [=](){
+    QTimer::singleShot(6000, this, [=](){
         ui->correct->hide();
         ui->countdown->hide();
         nextRound(correct_num);
@@ -382,16 +385,6 @@ void SecondWindow::correctRound(const QString& message){
 
 }
 
-void SecondWindow::showResult()
-{
-//    ui->resultboard->raise();
-//    ui->resultboard->show();
-//    QTimer::singleShot(9000, this, [=](){
-//        ui->resultboard->hide();
-//        current_round=1;
-//        nextRound(BACKTOMAIN);
-//    });
-}
 
 void SecondWindow::showTimeOverAnswer(const QString& answer) {
     // 기존 timeoverRound에서 정답을 받아 표시하도록 수정
@@ -441,7 +434,7 @@ void SecondWindow::showTimeOverAnswer(const QString& answer) {
     ui->countdown->show();
 
     // after 8 secs, next round begins
-    QTimer::singleShot(9000, this, [=](){
+    QTimer::singleShot(6000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
         nextRound(TIME_OVER);
@@ -464,7 +457,7 @@ void SecondWindow::nextRound(int correct_num)
     ui->timelabel->setStyleSheet("color: black;");
 
     // countdown timer
-    m_count = 8;
+    m_count = 5;
     count_timer->stop();
 
     // count round
@@ -472,7 +465,6 @@ void SecondWindow::nextRound(int correct_num)
     g_thirdWindow->roundinc();
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == BACKTOMAIN){ ui->textEdit->clear(); this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); this->show(); }
     else { this->hide(); g_thirdWindow->show(); }
 }
@@ -618,4 +610,10 @@ void SecondWindow::updateCountdown()
 void SecondWindow::roundinc()
 {
     current_round += 1;
+}
+
+void SecondWindow::roundinit()
+{
+    ui->textEdit->clear();
+    current_round = 1;
 }

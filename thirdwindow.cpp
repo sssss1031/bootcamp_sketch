@@ -14,7 +14,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     ui(new Ui::ThirdWindow),
     m_maxPlayer(maxPlayer),
     ElapsedTime(0,0,20),
-    m_count(8),
+    m_count(5),
     m_blinkStarted (false), // led timer blink
     dotCount(0),
     round_start(false),
@@ -147,6 +147,9 @@ ThirdWindow::~ThirdWindow()
 }
 
 void ThirdWindow::backToMainRequested() {
+    current_round=1;
+    g_secondWindow->roundinit();
+    ui->textEdit->clear();
     disconnect_client();  // 연결 해제
     emit backToMain();  // 메인 윈도우로 돌아가기
 }
@@ -275,6 +278,9 @@ void ThirdWindow::hideHint()
 void ThirdWindow::onBeginRound(const QString& answer)
 {
     round_start = true;
+    ui->lineEdit->setEnabled(true);
+    ui->enterButton->setEnabled(true);
+
     ui->waiting->hide();
     qDebug()<<"onBeginRound";
     timer->start(1000);
@@ -296,6 +302,8 @@ void ThirdWindow::appendChatMessage(const QString& message) {
 
 void ThirdWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
+    ui->lineEdit->setEnabled(false);
+    ui->enterButton->setEnabled(false);
 
     if(blink_timer){
 
@@ -346,22 +354,13 @@ void ThirdWindow::correctRound(const QString& message){
     ui->countdown->show();
 
     // after 8 secs, next round begins
-    QTimer::singleShot(9000, this, [=](){
+    QTimer::singleShot(6000, this, [=](){
         ui->correct->hide();
         ui->countdown->hide();
         nextRound(correct_num);
     });
 }
 
-void ThirdWindow::showResult()
-{
-//    ui->resultboard->show();
-//    QTimer::singleShot(9000, this, [=](){
-//        ui->resultboard->hide();
-//        current_round=1;
-//        nextRound(BACKTOMAIN);
-//    });
-}
 
 void ThirdWindow::updateScoreboard(const ScoreList& players)
 {
@@ -422,6 +421,8 @@ void ThirdWindow::setMyNum(int num) {
 void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
+    ui->lineEdit->setEnabled(false);
+    ui->enterButton->setEnabled(false);
 
     if(blink_timer){
 
@@ -501,7 +502,7 @@ void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     ui->countdown->raise();
     ui->countdown->show();
 
-    QTimer::singleShot(9000, this, [=](){
+    QTimer::singleShot(6000, this, [=](){
         ui->timeover->hide();
         ui->countdown->hide();
         nextRound(TIME_OVER);
@@ -521,7 +522,7 @@ void ThirdWindow::nextRound(int correct_num)
     ui->timelabel->setStyleSheet("color: black;");
 
     // countdown timer
-    m_count = 8;
+    m_count = 5;
     count_timer->stop();
 
     // count round
@@ -621,4 +622,10 @@ void ThirdWindow::updateWaiting()
 void ThirdWindow::roundinc()
 {
     current_round += 1;
+}
+
+void ThirdWindow::roundinit()
+{
+    ui->textEdit->clear();
+    current_round = 1;
 }
