@@ -31,6 +31,7 @@ SecondWindow::SecondWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setEnabled(true);
 
     ui->countdown->hide();
+    ui->resultwidget->hide();
     // backbutton 클릭 시 backToMain 신호 발생
     connect(ui->backbutton, &QPushButton::clicked, this, &SecondWindow::backToMainRequested);
 
@@ -464,7 +465,6 @@ void SecondWindow::nextRound(int correct_num)
     g_thirdWindow->roundinc();
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == BACKTOMAIN){ this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); this->show(); }
     else { this->hide(); g_thirdWindow->show(); }
 }

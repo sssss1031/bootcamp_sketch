@@ -34,6 +34,7 @@ ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     drawingWidget->setEnabled(false);
     ui->countdown->hide();
     ui->waiting->raise();
+    ui->resultwidget->hide();
 
     hintFrame = ui->hintFrame;
     hintLabel = ui->hintLabel;
@@ -529,7 +530,6 @@ void ThirdWindow::nextRound(int correct_num)
     g_secondWindow->roundinc();
     // change window UI
     if (correct_num == TIME_OVER) { this->hide(); this->show(); return; }
-    if (correct_num == BACKTOMAIN){ this->hide(); g_mainWindow->show(); return; }
     if (correct_num == retMyNum()) { this->hide(); g_secondWindow->show(); }
     else { this->hide(); this->show(); }
 }
