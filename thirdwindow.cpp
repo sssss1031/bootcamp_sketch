@@ -8,6 +8,7 @@
 #include "gpio_control.h"
 #include <QDebug>
 #include "chatmessagedispatcher.h"
+#include <QRegularExpression>
 
 ThirdWindow::ThirdWindow(int maxPlayer, QWidget *parent) :
     QMainWindow(parent),
@@ -378,13 +379,21 @@ void ThirdWindow::updateScoreboard(const ScoreList& players)
      int start_col = (3-n)/2;
 
      for (int i = 0; i < n; ++i) {
-             int idx = start_col + i;
-             if (idx < 0 || idx >= 3) continue;
-             nameLabels[idx]->setText(players[i].first);
-             scoreLabels[idx]->setText(QString::number(players[i].second));
-             nameLabels[idx]->setVisible(true);
-             scoreLabels[idx]->setVisible(true);
-         }
+         int idx = start_col + i;
+         if (idx < 0 || idx >= 3) continue;
+
+         // playerX에서 숫자만 추출
+         QString playerName = players[i].first;
+         QRegularExpression re("\\d+");
+         QRegularExpressionMatch match = re.match(playerName);
+         QString numberStr = match.hasMatch() ? match.captured() : QString::number(i+1);
+
+         // "P" + 숫자 형태로 표시
+         nameLabels[idx]->setText("P" + numberStr);
+         scoreLabels[idx]->setText(QString::number(players[i].second));
+         nameLabels[idx]->setVisible(true);
+         scoreLabels[idx]->setVisible(true);
+     }
 
          ui->scoreboard->update();
 }
