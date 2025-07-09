@@ -147,6 +147,8 @@ ThirdWindow::~ThirdWindow()
 }
 
 void ThirdWindow::backToMainRequested() {
+    current_round=1;
+    g_secondWindow->roundinit();
     disconnect_client();  // 연결 해제
     emit backToMain();  // 메인 윈도우로 돌아가기
 }
@@ -275,6 +277,9 @@ void ThirdWindow::hideHint()
 void ThirdWindow::onBeginRound(const QString& answer)
 {
     round_start = true;
+    ui->lineEdit->setEnabled(true);
+    ui->enterButton->setEnabled(true);
+
     ui->waiting->hide();
     qDebug()<<"onBeginRound";
     timer->start(1000);
@@ -296,6 +301,8 @@ void ThirdWindow::appendChatMessage(const QString& message) {
 
 void ThirdWindow::correctRound(const QString& message){
     qDebug() << "correct! msg: " << message;
+    ui->lineEdit->setEnabled(false);
+    ui->enterButton->setEnabled(false);
 
     if(blink_timer){
 
@@ -353,15 +360,6 @@ void ThirdWindow::correctRound(const QString& message){
     });
 }
 
-void ThirdWindow::showResult()
-{
-//    ui->resultboard->show();
-//    QTimer::singleShot(9000, this, [=](){
-//        ui->resultboard->hide();
-//        current_round=1;
-//        nextRound(BACKTOMAIN);
-//    });
-}
 
 void ThirdWindow::updateScoreboard(const ScoreList& players)
 {
@@ -422,6 +420,8 @@ void ThirdWindow::setMyNum(int num) {
 void ThirdWindow::showTimeOverAnswer(const QString& answer) {
     qDebug() << "Time over, 정답:" << answer;
     drawingWidget->setEnabled(false);
+    ui->lineEdit->setEnabled(false);
+    ui->enterButton->setEnabled(false);
 
     if(blink_timer){
 
@@ -621,4 +621,9 @@ void ThirdWindow::updateWaiting()
 void ThirdWindow::roundinc()
 {
     current_round += 1;
+}
+
+void ThirdWindow::roundinit()
+{
+    current_round = 1;
 }

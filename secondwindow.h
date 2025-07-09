@@ -9,7 +9,7 @@
 
 #define TIME_OVER 9999
 #define BACKTOMAIN 10000
-#define MAX_ROUND 4
+#define MAX_ROUND 2
 
 namespace Ui {
 class SecondWindow;
@@ -23,6 +23,7 @@ public:
     explicit SecondWindow(int maxPlayer = 2, QWidget *parent = nullptr);
     TouchDrawingWidget *drawingWidget;
     void roundinc();
+    void roundinit();
     ~SecondWindow();
 
 public slots:
@@ -45,7 +46,6 @@ private:
 
     void timeoverRound();
     void nextRound(int correct_num);
-    void showResult();
 
     const int originX = 120;
     const int originY = 40;

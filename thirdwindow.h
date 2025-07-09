@@ -11,7 +11,7 @@
 
 #define TIME_OVER 9999
 #define BACKTOMAIN 10000
-#define MAX_ROUND 4
+#define MAX_ROUND 2
 
 namespace Ui {
 class ThirdWindow;
@@ -25,6 +25,7 @@ public:
     explicit ThirdWindow(int maxPlayer = 2, QWidget *parent = nullptr);
     TouchDrawingWidget *drawingWidget;
     void roundinc();
+    void roundinit();
     ~ThirdWindow();
 
 
@@ -57,7 +58,6 @@ private:
     QString m_answerStr;
     void showHint(const QString& answer);
     void hideHint();
-    void showResult();
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

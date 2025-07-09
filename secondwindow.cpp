@@ -158,6 +158,8 @@ SecondWindow::~SecondWindow()
 }
 
 void SecondWindow::backToMainRequested() {
+    current_round=1;
+    g_thirdWindow->roundinit();
     disconnect_client();  // 연결 해제
     emit backToMain();  // 메인 윈도우로 돌아가기
 }
@@ -382,16 +384,6 @@ void SecondWindow::correctRound(const QString& message){
 
 }
 
-void SecondWindow::showResult()
-{
-//    ui->resultboard->raise();
-//    ui->resultboard->show();
-//    QTimer::singleShot(9000, this, [=](){
-//        ui->resultboard->hide();
-//        current_round=1;
-//        nextRound(BACKTOMAIN);
-//    });
-}
 
 void SecondWindow::showTimeOverAnswer(const QString& answer) {
     // 기존 timeoverRound에서 정답을 받아 표시하도록 수정
@@ -618,4 +610,9 @@ void SecondWindow::updateCountdown()
 void SecondWindow::roundinc()
 {
     current_round += 1;
+}
+
+void SecondWindow::roundinit()
+{
+    current_round = 1;
 }
